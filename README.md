@@ -113,7 +113,7 @@ pipeline = ExtractionPipeline(
 assessments = pipeline.run()
 ```
 
-By default, the pipeline runs a small sample first. To process the entire input dataset, set `process_all_notes=True` in Python or pass `--process-all-notes` on the CLI.
+By default, the pipeline runs a small sample first. To process the entire input dataset, set `process_all_notes=True` in Python or choose a `full` mode when prompted by the CLI.
 
 ### Loading from MIMIC IV via PyHealth
 
@@ -194,18 +194,52 @@ output:
 # output/mds_ino_preprocessing_diff_summary.csv
 ```
 
-### CLI sample-first workflow
+### CLI — interactive mode prompt
 
-Run a small sample first:
+When run from a terminal, the pipeline always asks which processing mode you want before starting:
 
-```bash
-python src/pipeline.py --source data/discharge.csv/discharge.csv --sample-size 5
+```
+$ python src/pipeline.py --source data/discharge.csv/discharge.csv
+
+Select processing mode:
+  1. sample          - run the initial sample only
+  2. sample-compare  - run the sample and compare preprocessing methods
+  3. full            - process the entire dataset
+  4. full-compare    - process the entire dataset and compare preprocessing methods
+Enter mode [1-4] (default 1):
 ```
 
-Process the full dataset only when ready:
+Enter a number (1–4) or a mode name, or press **Enter** to accept the default (`sample`).
+
+| Mode | Notes processed | Comparison output |
+|------|-----------------|-------------------|
+| `sample` | First `--sample-size` notes (default 5) | No |
+| `sample-compare` | First `--sample-size` notes | Yes — diff CSV + JSON |
+| `full` | All notes | No |
+| `full-compare` | All notes | Yes — diff CSV + JSON |
+
+### CLI — scripted / non-interactive use
+
+Pass `--mode` to skip the prompt entirely (e.g. in automated pipelines):
 
 ```bash
-python src/pipeline.py --source data/discharge.csv/discharge.csv --process-all-notes
+# Sample run, no comparison
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample
+
+# Sample run with preprocessing comparison
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample-compare
+
+# Full dataset
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full
+
+# Full dataset with comparison
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full-compare
+```
+
+You can override the sample size with `--sample-size`:
+
+```bash
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample --sample-size 20
 ```
 
 ---
