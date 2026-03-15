@@ -23,7 +23,7 @@ import json
 import logging
 import os
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 import pandas as pd
 from tqdm import tqdm
@@ -39,6 +39,36 @@ from src.mapper import MDSMapper
 from src.mds_schema import MDSAssessment, MDSSchema
 
 logger = logging.getLogger(__name__)
+
+_DIFF_SUMMARY_COLUMNS = [
+    "note_id",
+    "subject_id",
+    "hadm_id",
+    "sections",
+    "difference_type",
+    "item_id",
+    "heuristic",
+    "llm_evidence",
+]
+
+_PROCESSING_MODE_CONFIGS: Dict[str, Dict[str, bool]] = {
+    "sample": {
+        "process_all_notes": False,
+        "compare_preprocessing_methods": False,
+    },
+    "sample-compare": {
+        "process_all_notes": False,
+        "compare_preprocessing_methods": True,
+    },
+    "full": {
+        "process_all_notes": True,
+        "compare_preprocessing_methods": False,
+    },
+    "full-compare": {
+        "process_all_notes": True,
+        "compare_preprocessing_methods": True,
+    },
+}
 
 
 class ExtractionPipeline:
@@ -368,6 +398,11 @@ class ExtractionPipeline:
             json.dump(diff_rows, fh, indent=2, ensure_ascii=False)
         logger.info("Saved %d preprocessing diff summary rows to %s", len(diff_rows), path)
 
+        csv_path = os.path.join(self.output_dir, "mds_ino_preprocessing_diff_summary.csv")
+        flat_rows = self._flatten_preprocessing_diff_summary(diff_rows)
+        pd.DataFrame(flat_rows, columns=_DIFF_SUMMARY_COLUMNS).to_csv(csv_path, index=False)
+        logger.info("Saved %d preprocessing diff summary csv rows to %s", len(flat_rows), csv_path)
+
     def _build_preprocessing_diff_summary(
         self,
         rows: List[Dict[str, Any]],
@@ -390,26 +425,34 @@ class ExtractionPipeline:
         llm_evidence = variants.get("llm_evidence")
         if not isinstance(heuristic, dict) or not isinstance(llm_evidence, dict):
             return None
+        heuristic_variant = cast(Dict[str, Any], heuristic)
+        llm_variant = cast(Dict[str, Any], llm_evidence)
 
-        heuristic_assessment = heuristic.get("assessment", {})
-        llm_assessment = llm_evidence.get("assessment", {})
+        heuristic_assessment = heuristic_variant.get("assessment", {})
+        llm_assessment = llm_variant.get("assessment", {})
         if not isinstance(heuristic_assessment, dict) or not isinstance(llm_assessment, dict):
             return None
+        heuristic_assessment_dict = cast(Dict[str, Any], heuristic_assessment)
+        llm_assessment_dict = cast(Dict[str, Any], llm_assessment)
 
-        heuristic_fields = heuristic_assessment.get("fields", {})
-        llm_fields = llm_assessment.get("fields", {})
-        heuristic_confidence = heuristic_assessment.get("confidence", {})
-        llm_confidence = llm_assessment.get("confidence", {})
+        heuristic_fields = heuristic_assessment_dict.get("fields", {})
+        llm_fields = llm_assessment_dict.get("fields", {})
+        heuristic_confidence = heuristic_assessment_dict.get("confidence", {})
+        llm_confidence = llm_assessment_dict.get("confidence", {})
         if not isinstance(heuristic_fields, dict) or not isinstance(llm_fields, dict):
             return None
         if not isinstance(heuristic_confidence, dict) or not isinstance(llm_confidence, dict):
             return None
+        heuristic_fields_dict = cast(Dict[str, Any], heuristic_fields)
+        llm_fields_dict = cast(Dict[str, Any], llm_fields)
+        heuristic_confidence_dict = cast(Dict[str, Any], heuristic_confidence)
+        llm_confidence_dict = cast(Dict[str, Any], llm_confidence)
 
         field_differences: List[Dict[str, Any]] = []
-        all_field_ids = sorted(set(heuristic_fields) | set(llm_fields))
+        all_field_ids = sorted(set(heuristic_fields_dict) | set(llm_fields_dict))
         for item_id in all_field_ids:
-            heuristic_value = heuristic_fields.get(item_id)
-            llm_value = llm_fields.get(item_id)
+            heuristic_value = heuristic_fields_dict.get(item_id)
+            llm_value = llm_fields_dict.get(item_id)
             if heuristic_value != llm_value:
                 field_differences.append(
                     {
@@ -420,10 +463,10 @@ class ExtractionPipeline:
                 )
 
         confidence_differences: List[Dict[str, Any]] = []
-        all_confidence_ids = sorted(set(heuristic_confidence) | set(llm_confidence))
+        all_confidence_ids = sorted(set(heuristic_confidence_dict) | set(llm_confidence_dict))
         for item_id in all_confidence_ids:
-            heuristic_value = heuristic_confidence.get(item_id)
-            llm_value = llm_confidence.get(item_id)
+            heuristic_value = heuristic_confidence_dict.get(item_id)
+            llm_value = llm_confidence_dict.get(item_id)
             if heuristic_value != llm_value:
                 confidence_differences.append(
                     {
@@ -444,6 +487,45 @@ class ExtractionPipeline:
             "field_differences": field_differences,
             "confidence_differences": confidence_differences,
         }
+
+    def _flatten_preprocessing_diff_summary(
+        self,
+        diff_rows: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Return one flat row per disagreement for easier CSV scanning."""
+        flattened: List[Dict[str, Any]] = []
+
+        for row in diff_rows:
+            base: Dict[str, Any] = {
+                "note_id": row.get("note_id"),
+                "subject_id": row.get("subject_id"),
+                "hadm_id": row.get("hadm_id"),
+                "sections": ",".join(row.get("sections", self.sections)),
+            }
+
+            for diff_type, key in (
+                ("field", "field_differences"),
+                ("confidence", "confidence_differences"),
+            ):
+                diffs = row.get(key, [])
+                if not isinstance(diffs, list):
+                    continue
+                diff_list = cast(List[Any], diffs)
+                for diff in diff_list:
+                    if not isinstance(diff, dict):
+                        continue
+                    diff_dict = cast(Dict[str, Any], diff)
+                    flattened.append(
+                        {
+                            **base,
+                            "difference_type": diff_type,
+                            "item_id": diff_dict.get("item_id"),
+                            "heuristic": diff_dict.get("heuristic"),
+                            "llm_evidence": diff_dict.get("llm_evidence"),
+                        }
+                    )
+
+        return flattened
 
     def _build_comparison_row(
         self,
@@ -551,7 +633,54 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Process the full input dataset instead of stopping after the sample run",
     )
+    parser.add_argument(
+        "--mode",
+        choices=sorted(_PROCESSING_MODE_CONFIGS.keys()),
+        default=None,
+        help="Processing mode: sample, sample-compare, full, or full-compare",
+    )
     return parser
+
+
+def _prompt_for_processing_mode() -> str:
+    """Prompt the user to choose a processing mode for interactive CLI runs."""
+    options = {
+        "1": "sample",
+        "2": "sample-compare",
+        "3": "full",
+        "4": "full-compare",
+    }
+
+    print("Select processing mode:")
+    print("  1. sample          - run the initial sample only")
+    print("  2. sample-compare  - run the sample and compare preprocessing methods")
+    print("  3. full            - process the entire dataset")
+    print("  4. full-compare    - process the entire dataset and compare preprocessing methods")
+
+    while True:
+        response = input("Enter mode [1-4] (default 1): ").strip().lower()
+        if not response:
+            return "sample"
+        if response in options:
+            return options[response]
+        if response in _PROCESSING_MODE_CONFIGS:
+            return response
+        print("Invalid selection. Choose 1, 2, 3, 4, or a mode name.")
+
+
+def _resolve_processing_mode(args: argparse.Namespace) -> argparse.Namespace:
+    """Apply explicit or interactive processing mode settings to parsed args."""
+    mode = args.mode
+    if mode is None and sys.stdin.isatty():
+        mode = _prompt_for_processing_mode()
+
+    if mode is None:
+        return args
+
+    config = _PROCESSING_MODE_CONFIGS[mode]
+    args.compare_preprocessing_methods = config["compare_preprocessing_methods"]
+    args.process_all_notes = config["process_all_notes"]
+    return args
 
 
 def _main() -> int:
@@ -568,6 +697,7 @@ def _main() -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
     args = _build_arg_parser().parse_args()
+    args = _resolve_processing_mode(args)
 
     pipeline = ExtractionPipeline(
         source=args.source,

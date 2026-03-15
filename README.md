@@ -191,6 +191,7 @@ output:
 # output/mds_ino_form_ready.json
 # output/mds_ino_preprocessing_comparison.json
 # output/mds_ino_preprocessing_diff_summary.json
+# output/mds_ino_preprocessing_diff_summary.csv
 ```
 
 ### CLI sample-first workflow

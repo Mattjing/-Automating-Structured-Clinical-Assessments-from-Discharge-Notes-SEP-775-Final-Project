@@ -18,7 +18,7 @@ if __name__ == "__main__":
     if repo_root not in sys.path:
         sys.path.insert(0, repo_root)
 
-from src.pipeline import ExtractionPipeline
+from src.pipeline import ExtractionPipeline, _prompt_for_processing_mode, _resolve_processing_mode
 
 
 # ---------------------------------------------------------------------------
@@ -264,10 +264,19 @@ class TestExtractionPipelineRun:
         )
         assert os.path.isfile(diff_output_path)
 
+        csv_output_path = os.path.join(
+            str(tmp_path / "output"),
+            "mds_ino_preprocessing_diff_summary.csv",
+        )
+        assert os.path.isfile(csv_output_path)
+
         with open(diff_output_path, "r", encoding="utf-8") as f:
             diff_rows = json.load(f)
 
         assert diff_rows == []
+
+        csv_rows = pd.read_csv(csv_output_path)
+        assert csv_rows.empty
 
     def test_diff_summary_contains_only_disagreements(self, sample_excel, tmp_path):
         pipeline = _make_pipeline(
@@ -311,6 +320,15 @@ class TestExtractionPipelineRun:
             {"item_id": "O0100C1", "heuristic": 0.95, "llm_evidence": 0.2}
         ]
 
+        csv_output_path = os.path.join(
+            str(tmp_path / "output"),
+            "mds_ino_preprocessing_diff_summary.csv",
+        )
+        csv_rows = pd.read_csv(csv_output_path)
+        assert len(csv_rows) == 4
+        assert set(csv_rows["difference_type"]) == {"field", "confidence"}
+        assert set(csv_rows["item_id"]) == {"O0100C1"}
+
     def test_sample_first_mode_limits_notes_processed(self, sample_excel, tmp_path, large_note_list):
         pipeline = _make_pipeline(
             sample_excel,
@@ -342,3 +360,38 @@ class TestExtractionPipelineRun:
 
         assert len(results) == len(large_note_list)
         assert mock_extract.call_count == len(large_note_list)
+
+
+class TestPipelineCliModeSelection:
+    def test_prompt_for_processing_mode_accepts_numeric_choice(self):
+        with patch("builtins.input", return_value="2"):
+            assert _prompt_for_processing_mode() == "sample-compare"
+
+    def test_prompt_for_processing_mode_defaults_to_sample(self):
+        with patch("builtins.input", return_value=""):
+            assert _prompt_for_processing_mode() == "sample"
+
+    def test_resolve_processing_mode_from_explicit_mode(self):
+        args = SimpleNamespace(
+            mode="full-compare",
+            compare_preprocessing_methods=False,
+            process_all_notes=False,
+        )
+
+        resolved = _resolve_processing_mode(args)
+        assert resolved.compare_preprocessing_methods is True
+        assert resolved.process_all_notes is True
+
+    def test_resolve_processing_mode_prompts_in_interactive_terminal(self):
+        args = SimpleNamespace(
+            mode=None,
+            compare_preprocessing_methods=False,
+            process_all_notes=False,
+        )
+
+        with patch("src.pipeline.sys.stdin.isatty", return_value=True), \
+             patch("src.pipeline._prompt_for_processing_mode", return_value="full"):
+            resolved = _resolve_processing_mode(args)
+
+        assert resolved.compare_preprocessing_methods is False
+        assert resolved.process_all_notes is True
