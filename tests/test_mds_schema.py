@@ -76,6 +76,13 @@ class TestMDSSchema:
         expected = {"A", "B", "C", "D", "E", "G", "H", "I", "J", "K", "M", "N", "O"}
         assert expected.issubset(set(schema.section_ids()))
 
+    def test_can_limit_schema_to_requested_sections(self):
+        schema = MDSSchema(section_ids=["I", "N", "O"])
+        assert schema.section_ids() == ["I", "N", "O"]
+        assert schema.get_section("A") is None
+        assert schema.get_item("I0700") is not None
+        assert schema.get_item("A0800") is None
+
     def test_get_section_returns_section(self, schema):
         sec = schema.get_section("A")
         assert sec is not None

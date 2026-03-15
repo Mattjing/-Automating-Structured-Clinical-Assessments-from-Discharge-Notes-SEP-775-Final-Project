@@ -29,13 +29,23 @@ def test_extract_priority_snippets_for_ino_keywords():
     )
     snippets = extract_priority_snippets(text, sections=["I", "N", "O"])
     joined = " ".join(snippets).lower()
+    assert "[i]" in joined
     assert "diagnosis" in joined
-    assert "medications" in joined
+    assert "[n]" in joined
+    assert "warfarin" in joined
+    assert "[o]" in joined
     assert "oxygen therapy" in joined
 
 
-def test_build_extraction_context_includes_cleaned_note_label():
+def test_build_extraction_context_prioritizes_targeted_evidence():
     text = "Discharge diagnosis: COPD. Home medications reviewed."
     context = build_extraction_context(text, sections=["I", "N", "O"])
-    assert "=== CLEANED NOTE ===" in context
+    assert "=== TARGET SECTIONS ===" in context
+    assert "=== PRIORITY EVIDENCE ===" in context
     assert "copd" in context.lower()
+
+
+def test_build_extraction_context_uses_supporting_excerpt_when_signal_is_sparse():
+    text = "Short note without explicit section headers but mentions diabetes."
+    context = build_extraction_context(text, sections=["I", "N", "O"])
+    assert "=== SUPPORTING NOTE EXCERPT ===" in context

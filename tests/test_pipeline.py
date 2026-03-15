@@ -7,6 +7,7 @@ The pipeline tests mock the LLM calls so no actual API requests are made.
 import json
 import os
 import sys
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import pandas as pd
@@ -41,6 +42,19 @@ def sample_excel(tmp_path):
     path = str(tmp_path / "notes.xlsx")
     df.to_excel(path, index=False)
     return path
+
+
+@pytest.fixture
+def large_note_list():
+    return [
+        SimpleNamespace(
+            note_id=f"n{i}",
+            subject_id=f"p{i}",
+            hadm_id=f"h{i}",
+            text=f"Patient note {i} with hypertension and warfarin.",
+        )
+        for i in range(8)
+    ]
 
 
 MOCK_LLM_RESPONSE = json.dumps(
@@ -209,3 +223,122 @@ class TestExtractionPipelineRun:
                 preprocess_input=False,
             )
         assert pipeline.preprocess_input is False
+
+    def test_compare_preprocessing_methods_writes_comparison_file(self, sample_excel, tmp_path):
+        pipeline = _make_pipeline(
+            sample_excel,
+            tmp_path,
+            output_format="json",
+            compare_preprocessing_methods=True,
+        )
+        comparison_payload = {
+            "heuristic": {
+                "prepared_text": "heuristic context",
+                "extraction": json.loads(MOCK_LLM_RESPONSE),
+            },
+            "llm_evidence": {
+                "prepared_text": "llm evidence context",
+                "extraction": json.loads(MOCK_LLM_RESPONSE),
+            },
+        }
+
+        with patch("src.extractor.LLMExtractor.extract_with_preprocessing_variants", return_value=comparison_payload):
+            pipeline.run()
+
+        output_path = os.path.join(
+            str(tmp_path / "output"),
+            "mds_ino_preprocessing_comparison.json",
+        )
+        assert os.path.isfile(output_path)
+
+        with open(output_path, "r", encoding="utf-8") as f:
+            rows = json.load(f)
+
+        assert len(rows) == 2
+        assert set(rows[0]["variants"].keys()) == {"heuristic", "llm_evidence"}
+        assert rows[0]["variants"]["heuristic"]["prepared_text"] == "heuristic context"
+
+        diff_output_path = os.path.join(
+            str(tmp_path / "output"),
+            "mds_ino_preprocessing_diff_summary.json",
+        )
+        assert os.path.isfile(diff_output_path)
+
+        with open(diff_output_path, "r", encoding="utf-8") as f:
+            diff_rows = json.load(f)
+
+        assert diff_rows == []
+
+    def test_diff_summary_contains_only_disagreements(self, sample_excel, tmp_path):
+        pipeline = _make_pipeline(
+            sample_excel,
+            tmp_path,
+            output_format="json",
+            compare_preprocessing_methods=True,
+        )
+
+        heuristic_extraction = json.loads(MOCK_LLM_RESPONSE)
+        llm_extraction = json.loads(MOCK_LLM_RESPONSE)
+        llm_extraction["O0100C1"] = False
+        llm_extraction["confidence"]["O0100C1"] = 0.2
+
+        comparison_payload = {
+            "heuristic": {
+                "prepared_text": "heuristic context",
+                "extraction": heuristic_extraction,
+            },
+            "llm_evidence": {
+                "prepared_text": "llm evidence context",
+                "extraction": llm_extraction,
+            },
+        }
+
+        with patch("src.extractor.LLMExtractor.extract_with_preprocessing_variants", return_value=comparison_payload):
+            pipeline.run()
+
+        diff_output_path = os.path.join(
+            str(tmp_path / "output"),
+            "mds_ino_preprocessing_diff_summary.json",
+        )
+        with open(diff_output_path, "r", encoding="utf-8") as f:
+            diff_rows = json.load(f)
+
+        assert len(diff_rows) == 2
+        assert diff_rows[0]["field_differences"] == [
+            {"item_id": "O0100C1", "heuristic": True, "llm_evidence": False}
+        ]
+        assert diff_rows[0]["confidence_differences"] == [
+            {"item_id": "O0100C1", "heuristic": 0.95, "llm_evidence": 0.2}
+        ]
+
+    def test_sample_first_mode_limits_notes_processed(self, sample_excel, tmp_path, large_note_list):
+        pipeline = _make_pipeline(
+            sample_excel,
+            tmp_path,
+            output_format="json",
+            sample_size=3,
+            process_all_notes=False,
+        )
+
+        with patch("src.pipeline.MIMICDischargeLoader.load", return_value=large_note_list), \
+             patch("src.extractor.LLMExtractor.extract", return_value=json.loads(MOCK_LLM_RESPONSE)) as mock_extract:
+            results = pipeline.run()
+
+        assert len(results) == 3
+        assert mock_extract.call_count == 3
+
+    def test_process_all_notes_overrides_sample_limit(self, sample_excel, tmp_path, large_note_list):
+        pipeline = _make_pipeline(
+            sample_excel,
+            tmp_path,
+            output_format="json",
+            sample_size=3,
+            process_all_notes=True,
+        )
+
+        with patch("src.pipeline.MIMICDischargeLoader.load", return_value=large_note_list), \
+             patch("src.extractor.LLMExtractor.extract", return_value=json.loads(MOCK_LLM_RESPONSE)) as mock_extract:
+            results = pipeline.run()
+
+        assert len(results) == len(large_note_list)
+        assert mock_extract.call_count == len(large_note_list)

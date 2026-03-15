@@ -18,7 +18,7 @@ import json
 import logging
 import os
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence, cast
 
 from tenacity import (
     retry,
@@ -28,7 +28,7 @@ from tenacity import (
 )
 
 from src.mds_schema import MDSItem, MDSItemType, MDSSchema
-from src.preprocessor import build_extraction_context
+from src.preprocessor import build_extraction_context, clean_discharge_text
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,13 @@ _SYSTEM_PROMPT = (
     "For text fields use a string. "
     "For MDS 3.0 sections I, N, and O: map to official item coding only, and "
     "do not invent diagnosis, medication, or treatment codes when evidence is absent."
+)
+
+_EVIDENCE_SYSTEM_PROMPT = (
+    "You are extracting only the most relevant evidence for MDS 3.0 sections I, N, and O "
+    "from a hospital discharge note. Return valid JSON only. Use the exact section keys provided. "
+    "For each section, return an array of short verbatim or near-verbatim evidence snippets from the note. "
+    "Do not code MDS items. Do not infer absent facts. If no evidence is present for a section, return an empty array."
 )
 
 _USER_PROMPT_TEMPLATE = """\
@@ -80,6 +87,26 @@ Example response format:
   }}
 }}
 """
+
+_EVIDENCE_USER_PROMPT_TEMPLATE = """\
+Extract the most relevant evidence snippets for MDS sections {sections} from the note below.
+
+Return a single JSON object with exactly these keys:
+- "I": evidence for diagnoses / active conditions
+- "N": evidence for medications / insulin / anticoagulants / antibiotics / injections
+- "O": evidence for treatments / procedures / oxygen / IV / dialysis / transfusions / ventilator support
+
+Rules:
+- Each value must be an array of short strings.
+- Keep each string concise.
+- Prefer direct evidence from the note.
+- If there is no evidence for a section, return [].
+
+=== DISCHARGE NOTE ===
+{note_text}
+"""
+
+_SUPPORTED_PREPROCESSING_MODES = ("heuristic", "llm_evidence")
 
 
 def _build_fields_spec(items: List[MDSItem]) -> str:
@@ -177,6 +204,37 @@ class LLMExtractor:
         """
         prepared_text = self._prepare_note_text(note_text)
         items = self._get_items_to_extract()
+        return self._extract_from_prepared_text(prepared_text, items)
+
+    def extract_with_preprocessing_variants(
+        self,
+        note_text: str,
+        modes: Optional[Sequence[str]] = None,
+    ) -> Dict[str, Dict[str, Any]]:
+        """Run extraction with multiple preprocessing modes and return all results."""
+        items = self._get_items_to_extract()
+        if not items:
+            return {}
+
+        selected_modes = [self._normalize_preprocessing_mode(mode) for mode in (modes or _SUPPORTED_PREPROCESSING_MODES)]
+        results: Dict[str, Dict[str, Any]] = {}
+
+        for mode in selected_modes:
+            prepared_text = self._prepare_note_text(note_text, preprocessing_mode=mode)
+            extraction = self._extract_from_prepared_text(prepared_text, items)
+            results[mode] = {
+                "prepared_text": prepared_text,
+                "extraction": extraction,
+            }
+
+        return results
+
+    def _extract_from_prepared_text(
+        self,
+        prepared_text: str,
+        items: List[MDSItem],
+    ) -> Dict[str, Any]:
+        """Extract MDS values from already prepared text."""
         if not items:
             return {"confidence": {}}
 
@@ -225,12 +283,123 @@ class LLMExtractor:
             return items
         return self.schema.all_items()
 
-    def _prepare_note_text(self, note_text: str) -> str:
+    def _prepare_note_text(
+        self,
+        note_text: str,
+        preprocessing_mode: str = "heuristic",
+    ) -> str:
         """Preprocess note text before extraction to improve signal quality."""
         if not self.preprocess_input:
             return note_text
+        normalized_mode = self._normalize_preprocessing_mode(preprocessing_mode)
         sections = self.sections or ["I", "N", "O"]
-        return build_extraction_context(note_text, sections=sections)
+        if normalized_mode == "heuristic":
+            return build_extraction_context(note_text, sections=sections)
+        if normalized_mode == "llm_evidence":
+            return self._build_llm_evidence_context(note_text, sections=sections)
+        raise ValueError(f"Unsupported preprocessing mode: {preprocessing_mode!r}")
+
+    @staticmethod
+    def _normalize_preprocessing_mode(mode: str) -> str:
+        normalized = mode.strip().lower()
+        if normalized not in _SUPPORTED_PREPROCESSING_MODES:
+            raise ValueError(
+                f"Unsupported preprocessing mode: {mode!r}. "
+                f"Supported modes: {', '.join(_SUPPORTED_PREPROCESSING_MODES)}"
+            )
+        return normalized
+
+    def _build_llm_evidence_context(
+        self,
+        note_text: str,
+        sections: Sequence[str],
+    ) -> str:
+        """Use the LLM to condense the note into compact I/N/O evidence snippets."""
+        cleaned = clean_discharge_text(note_text)
+        if not cleaned:
+            return ""
+
+        prompt = _EVIDENCE_USER_PROMPT_TEMPLATE.format(
+            sections=", ".join(section.upper() for section in sections),
+            note_text=cleaned[:12000],
+        )
+        raw_response = self._call_evidence_llm(prompt)
+        evidence = self._parse_evidence_response(raw_response, sections)
+
+        parts: List[str] = [
+            "=== TARGET SECTIONS ===\n" + ", ".join(section.upper() for section in sections),
+            "=== LLM EVIDENCE SUMMARY ===",
+        ]
+
+        found_evidence = False
+        for section in sections:
+            section_id = section.upper()
+            snippets = evidence.get(section_id, [])
+            if snippets:
+                found_evidence = True
+                lines = "\n".join(f"- {snippet}" for snippet in snippets)
+                parts.append(f"[{section_id}]\n{lines}")
+
+        if not found_evidence:
+            return build_extraction_context(note_text, sections=sections)
+
+        parts.append("=== SUPPORTING NOTE EXCERPT ===\n" + cleaned[:1800])
+        return "\n\n".join(parts)
+
+    def _call_evidence_llm(self, user_message: str) -> str:
+        """Call the same LLM client for evidence condensation."""
+        if self.provider == "openai":
+            return _call_openai(
+                client=self._client,
+                model=self.model,
+                system_prompt=_EVIDENCE_SYSTEM_PROMPT,
+                user_message=user_message,
+                temperature=0.0,
+                max_tokens=min(self.max_tokens, 900),
+                max_retries=self.max_retries,
+            )
+        raise ValueError(f"Unsupported provider: {self.provider!r}")
+
+    def _parse_evidence_response(
+        self,
+        raw: str,
+        sections: Sequence[str],
+    ) -> Dict[str, List[str]]:
+        """Parse the LLM evidence condensation response."""
+        text = raw.strip()
+        text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.MULTILINE)
+        text = re.sub(r"\s*```$", "", text, flags=re.MULTILINE)
+        text = text.strip()
+
+        try:
+            parsed = json.loads(text)
+        except json.JSONDecodeError:
+            logger.warning(
+                "Evidence preprocessor returned non-JSON response; falling back to heuristic context. "
+                "Raw response (first 500 chars): %s",
+                text[:500],
+            )
+            return {section.upper(): [] for section in sections}
+
+        if not isinstance(parsed, dict):
+            return {section.upper(): [] for section in sections}
+        parsed_dict = cast(Dict[str, Any], parsed)
+
+        result: Dict[str, List[str]] = {}
+        for section in sections:
+            section_id = section.upper()
+            raw_snippets = parsed_dict.get(section_id, [])
+            if isinstance(raw_snippets, list):
+                snippets_list = cast(List[Any], raw_snippets)
+                result[section_id] = [
+                    str(snippet).strip()
+                    for snippet in snippets_list
+                    if str(snippet).strip()
+                ][:8]
+            else:
+                result[section_id] = []
+
+        return result
 
     def _build_client(self) -> Any:
         """Instantiate and return the LLM client."""
@@ -296,21 +465,23 @@ class LLMExtractor:
                 "LLM response was not a JSON object; falling back to null values."
             )
             parsed = {}
+        parsed_dict = cast(Dict[str, Any], parsed)
 
         # Keep only expected keys + confidence; coerce types where possible
         result: Dict[str, Any] = {}
         item_map = {item.item_id: item for item in items}
 
         for item in items:
-            value = parsed.get(item.item_id)
+            value = parsed_dict.get(item.item_id)
             if value is not None:
                 result[item.item_id] = _coerce_value(value, item)
 
-        confidence_raw = parsed.get("confidence", {})
+        confidence_raw = parsed_dict.get("confidence", {})
         if isinstance(confidence_raw, dict):
+            confidence_dict = cast(Dict[str, Any], confidence_raw)
             result["confidence"] = {
                 k: float(v)
-                for k, v in confidence_raw.items()
+                for k, v in confidence_dict.items()
                 if k in item_map and isinstance(v, (int, float))
             }
         else:
@@ -397,15 +568,17 @@ def _coerce_value(value: Any, item: MDSItem) -> Any:
             return str(value)
         if item.item_type == MDSItemType.MULTI:
             if isinstance(value, list):
-                return [str(v) for v in value]
+                values = cast(List[Any], value)
+                return [str(v) for v in values]
             return [str(value)]
         # TEXT
         return str(value)
     except (ValueError, TypeError):
+        fallback_value = cast(Any, value)
         logger.debug(
             "Could not coerce value %r to type %s for item %s; returning as-is.",
-            value,
+            repr(fallback_value),
             item.item_type,
             item.item_id,
         )
-        return value
+        return fallback_value

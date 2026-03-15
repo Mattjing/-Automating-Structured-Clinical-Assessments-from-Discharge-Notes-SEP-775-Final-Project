@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
 
 # ---------------------------------------------------------------------------
@@ -130,8 +130,13 @@ class MDSSchema:
     * O  – Special Treatments, Procedures, and Programs
     """
 
-    def __init__(self) -> None:
+    def __init__(self, section_ids: Optional[Sequence[str]] = None) -> None:
         self._sections: Dict[str, MDSSection] = {}
+        self._requested_section_ids = (
+            {section_id.upper() for section_id in section_ids}
+            if section_ids
+            else None
+        )
         self._build_schema()
 
     # ------------------------------------------------------------------
@@ -199,20 +204,27 @@ class MDSSchema:
         self._sections[section.section_id] = section
 
     def _build_schema(self) -> None:
-        """Populate all MDS 3.0 sections."""
-        self._build_section_a()
-        self._build_section_b()
-        self._build_section_c()
-        self._build_section_d()
-        self._build_section_e()
-        self._build_section_g()
-        self._build_section_h()
-        self._build_section_i()
-        self._build_section_j()
-        self._build_section_k()
-        self._build_section_m()
-        self._build_section_n()
-        self._build_section_o()
+        """Populate the requested MDS 3.0 sections."""
+        build_steps: List[tuple[str, Callable[[], None]]] = [
+            ("A", self._build_section_a),
+            ("B", self._build_section_b),
+            ("C", self._build_section_c),
+            ("D", self._build_section_d),
+            ("E", self._build_section_e),
+            ("G", self._build_section_g),
+            ("H", self._build_section_h),
+            ("I", self._build_section_i),
+            ("J", self._build_section_j),
+            ("K", self._build_section_k),
+            ("M", self._build_section_m),
+            ("N", self._build_section_n),
+            ("O", self._build_section_o),
+        ]
+
+        for section_id, builder in build_steps:
+            if self._requested_section_ids and section_id not in self._requested_section_ids:
+                continue
+            builder()
 
     def _build_section_a(self) -> None:
         sec = MDSSection("A", "Identification Information")

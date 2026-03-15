@@ -254,3 +254,31 @@ class TestLLMExtractorExtract:
         with patch("src.extractor.build_extraction_context", return_value="=== CLEANED NOTE ===\ntext") as mock_ctx:
             e.extract(SAMPLE_NOTE)
             mock_ctx.assert_called_once()
+
+    def test_extract_with_preprocessing_variants_returns_both_results(self, schema):
+        with patch("src.extractor._build_openai_client", return_value=MagicMock()):
+            e = LLMExtractor(
+                schema=schema,
+                api_key="sk-test",
+                sections=["I", "N", "O"],
+                items_per_request=50,
+                preprocess_input=True,
+            )
+
+        e._call_llm = MagicMock(return_value=SAMPLE_LLM_RESPONSE)
+
+        with patch("src.extractor.build_extraction_context", return_value="=== PRIORITY EVIDENCE ===\nheuristic"), \
+             patch.object(e, "_build_llm_evidence_context", return_value="=== LLM EVIDENCE SUMMARY ===\nllm"):
+            result = e.extract_with_preprocessing_variants(SAMPLE_NOTE)
+
+        assert set(result.keys()) == {"heuristic", "llm_evidence"}
+        assert result["heuristic"]["prepared_text"].endswith("heuristic")
+        assert result["llm_evidence"]["prepared_text"].endswith("llm")
+        assert result["heuristic"]["extraction"]["I0700"] is True
+
+    def test_extract_with_unknown_preprocessing_mode_raises(self, schema):
+        with patch("src.extractor._build_openai_client", return_value=MagicMock()):
+            e = LLMExtractor(schema=schema, api_key="sk-test", sections=["I", "N", "O"])
+
+        with pytest.raises(ValueError, match="Unsupported preprocessing mode"):
+            e.extract_with_preprocessing_variants(SAMPLE_NOTE, modes=["invalid-mode"])

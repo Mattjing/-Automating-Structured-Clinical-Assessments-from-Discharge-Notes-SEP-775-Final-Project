@@ -108,9 +108,12 @@ pipeline = ExtractionPipeline(
   sections=["I", "N", "O"],            # target sections
     output_dir="output",
     output_format="json",                 # "json", "csv", or "excel"
+    sample_size=5,                         # default sample-first run
 )
 assessments = pipeline.run()
 ```
+
+By default, the pipeline runs a small sample first. To process the entire input dataset, set `process_all_notes=True` in Python or pass `--process-all-notes` on the CLI.
 
 ### Loading from MIMIC IV via PyHealth
 
@@ -186,6 +189,22 @@ output:
 
 # Additional output when format=json:
 # output/mds_ino_form_ready.json
+# output/mds_ino_preprocessing_comparison.json
+# output/mds_ino_preprocessing_diff_summary.json
+```
+
+### CLI sample-first workflow
+
+Run a small sample first:
+
+```bash
+python src/pipeline.py --source data/discharge.csv/discharge.csv --sample-size 5
+```
+
+Process the full dataset only when ready:
+
+```bash
+python src/pipeline.py --source data/discharge.csv/discharge.csv --process-all-notes
 ```
 
 ---
