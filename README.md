@@ -10,7 +10,9 @@ The system takes unstructured hospital discharge notes (stored in Excel/CSV file
 
 The default workflow is now focused on **Section I (Diagnoses), Section N (Medications), and Section O (Special Treatments/Procedures)**:
 1. preprocess discharge text (remove noise/placeholders and surface I/N/O evidence),
-2. run LLM extraction with MDS-coded outputs,
+2. run extraction with either:
+  - **GPT/OpenAI LLM** (`LLMExtractor`), or
+  - **MedBERT biomedical model** (`MedBERTExtractor`, Hugging Face token classification),
 3. produce JSON that can be used directly to fill MDS I/N/O fields.
 
 ```
@@ -21,12 +23,13 @@ Discharge Note (free text)
         │
         ▼
    DischargePreprocessor  ← clean + focus text for I/N/O evidence
-       │
-       ▼
-     LLMExtractor         ← GPT-3.5-Turbo (OpenAI) structured prompting
+     │
+     ├──────────────► LLMExtractor      ← GPT-3.5-Turbo (OpenAI) structured prompting
+     │
+     └──────────────► MedBERTExtractor  ← Biomedical NER + rule-based item mapping
         │
         ▼
-    MDSMapper           ← Validates & maps to MDS 3.0 schema
+  MDSMapper / MedBERTMapper  ← Validates & maps to MDS 3.0 schema
         │
         ▼
   MDSAssessment         ← JSON / CSV / Excel output
@@ -39,13 +42,20 @@ Discharge Note (free text)
 ```
 .
 ├── config/
-│   └── config.yaml          # Runtime configuration
+│   ├── config.yaml                  # Runtime configuration
+│   └── medbert_patterns.auto.json   # Auto-generated MedBERT regex seed patterns
+├── scripts/
+│   ├── extract_mds_sections_from_pdf.py  # Parse MDS 3.0 PDF into section/item text + patterns
+│   └── preview_input_data.py
 ├── src/
 │   ├── __init__.py
 │   ├── data_loader.py       # Load discharge notes (Excel/CSV or PyHealth)
 │   ├── mds_schema.py        # MDS 3.0 form field definitions
 │   ├── extractor.py         # LLM-based field extraction
+│   ├── medbert_extractor.py # MedBERT-based biomedical NER extraction
 │   ├── mapper.py            # Validate and map extracted values
+│   ├── medbert_mapper.py    # Validate/map MedBERT outputs to schema
+│   ├── preprocessor.py      # Shared note cleaning + evidence-focused context builder
 │   └── pipeline.py          # End-to-end orchestration
 ├── tests/
 │   ├── test_data_loader.py
@@ -157,7 +167,7 @@ assessment = mapper.map(note.note_id, note.subject_id, note.hadm_id, raw)
 print(assessment.to_dict())
 ```
 
-### MedBERT extractor (scientific NER + rule mapping)
+### MedBERT extractor (biomedical model + rule mapping)
 
 The GPT extractor is kept unchanged. A second extractor/mapper pair is now available:
 
@@ -187,7 +197,21 @@ print(assessment.to_dict())
 
 `MedBERTMapper` stores NER entities and evidence snippets in `assessment.metadata` for auditability.
 
-#### Auto-generate MedBERT patterns from MDS 3.0 PDF
+## MDS 3.0 form data extraction (from official PDF)
+
+The project includes a utility that parses the MDS 3.0 reference form pages for Sections I/N/O and exports machine-readable item text. This is used to improve pattern quality and keep mapping aligned to form wording.
+
+Run:
+
+```bash
+python scripts/extract_mds_sections_from_pdf.py
+```
+
+Generated outputs:
+- [output/mds_sections_from_pdf.generated.json](output/mds_sections_from_pdf.generated.json)
+- [config/medbert_patterns.auto.json](config/medbert_patterns.auto.json)
+
+### Auto-generate MedBERT patterns from MDS 3.0 PDF
 
 To reduce manual pattern maintenance, generate regex seed patterns directly from the MDS PDF pages:
 
@@ -255,10 +279,12 @@ Select processing mode:
   2. sample-compare  - run the sample and compare preprocessing methods
   3. full            - process the entire dataset
   4. full-compare    - process the entire dataset and compare preprocessing methods
-Enter mode [1-4] (default 1):
+  5. medbert-sample  - run the initial sample with MedBERT NER
+  6. medbert-full    - process the entire dataset with MedBERT NER
+Enter mode [1-6] (default 1):
 ```
 
-Enter a number (1–4) or a mode name, or press **Enter** to accept the default (`sample`).
+Enter a number (1–6) or a mode name, or press **Enter** to accept the default (`sample`).
 
 | Mode | Notes processed | Comparison output |
 |------|-----------------|-------------------|
@@ -266,6 +292,8 @@ Enter a number (1–4) or a mode name, or press **Enter** to accept the default 
 | `sample-compare` | First `--sample-size` notes | Yes — diff CSV + JSON |
 | `full` | All notes | No |
 | `full-compare` | All notes | Yes — diff CSV + JSON |
+| `medbert-sample` | First `--sample-size` notes | No (MedBERT backend) |
+| `medbert-full` | All notes | No (MedBERT backend) |
 
 ### CLI — scripted / non-interactive use
 
@@ -283,6 +311,12 @@ python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full
 
 # Full dataset with comparison
 python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full-compare
+
+# Sample run using MedBERT backend
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-sample
+
+# Full dataset using MedBERT backend
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full
 ```
 
 You can override the sample size with `--sample-size`:
