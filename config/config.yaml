@@ -1,0 +1,51 @@
+# Configuration for Automating Structured Clinical Assessments from Discharge Notes
+
+# LLM Settings
+llm:
+  provider: "openai"           # "openai" or "huggingface"
+  model: "gpt-3.5-turbo"       # model name
+  temperature: 0.0             # deterministic outputs
+  max_tokens: 2048             # max tokens per response
+  request_timeout: 60          # seconds
+  max_retries: 3               # retry attempts on failure
+
+# Data Loading Settings
+data:
+  # Path to MIMIC IV discharge notes CSV file
+  csv_path: "data/discharge.csv/discharge.csv"
+  # Column names in the Excel file
+  note_id_col: "note_id"
+  subject_id_col: "subject_id"
+  hadm_id_col: "hadm_id"
+  text_col: "text"
+  # PyHealth MIMIC IV data root (if loading via pyhealth)
+  mimic_root: ""               # Set to your MIMIC IV data directory
+
+# MDS Extraction Settings
+extraction:
+  # MDS sections to extract (default project objective)
+  sections: ["I", "N", "O"]
+  # Batch size for processing multiple notes
+  batch_size: 10
+  # Whether to include extraction confidence scores
+  include_confidence: true
+
+# Input preprocessing settings
+preprocess:
+  enabled: true
+  max_clean_chars: 12000
+  max_snippet_chars: 4000
+
+# Output Settings
+output:
+  # Directory to save MDS results
+  output_dir: "output"
+  # Output file format: "csv", "json", or "excel"
+  format: "json"
+  # Whether to include the original discharge text in the output
+  include_source_text: false
+
+# Logging Settings
+logging:
+  level: "INFO"
+  log_file: "logs/pipeline.log"

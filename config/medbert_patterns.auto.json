@@ -1,0 +1,1166 @@
+{
+  "pdf_path": "MDS 3.0.pdf",
+  "page_ranges": {
+    "I": [
+      29,
+      31
+    ],
+    "N": [
+      42,
+      43
+    ],
+    "O": [
+      44,
+      49
+    ]
+  },
+  "schema_labels": {
+    "I": {
+      "I0020": "Primary medical condition category",
+      "I0020B": "Primary medical condition ICD code",
+      "I0100": "Cancer",
+      "I0200": "Anemia",
+      "I0300": "Atrial Fibrillation or Other Dysrhythmias",
+      "I0400": "Coronary Artery Disease (CAD)",
+      "I0500": "Deep Venous Thrombosis (DVT), Pulmonary Embolus (PE), or Pulmonary Thrombo-Embolism (PTE)",
+      "I0600": "Heart Failure",
+      "I0700": "Hypertension",
+      "I0800": "Orthostatic Hypotension",
+      "I0900": "Peripheral Vascular Disease (PVD) or Peripheral Arterial Disease (PAD)",
+      "I1100": "Cirrhosis",
+      "I1200": "Gastroesophageal Reflux Disease (GERD) or Ulcer",
+      "I1300": "Ulcerative Colitis, Crohn's Disease, or Inflammatory Bowel Disease",
+      "I1400": "Benign Prostatic Hyperplasia (BPH)",
+      "I1500": "Renal Insufficiency, Renal Failure, or End-Stage Renal Disease (ESRD)",
+      "I1550": "Neurogenic Bladder",
+      "I1650": "Obstructive Uropathy",
+      "I1700": "Multidrug-Resistant Organism (MDRO)",
+      "I2000": "Pneumonia",
+      "I2100": "Septicemia",
+      "I2200": "Tuberculosis",
+      "I2300": "Urinary Tract Infection (UTI) (LAST 30 DAYS)",
+      "I2400": "Viral Hepatitis",
+      "I2500": "Wound Infection (other than foot)",
+      "I2900": "Diabetes Mellitus (DM)",
+      "I3100": "Hyponatremia",
+      "I3200": "Hyperkalemia",
+      "I3300": "Hyperlipidemia",
+      "I3400": "Thyroid Disorder",
+      "I3700": "Arthritis",
+      "I3800": "Osteoporosis",
+      "I3900": "Hip Fracture",
+      "I4000": "Other Fracture",
+      "I4200": "Alzheimer's Disease",
+      "I4300": "Aphasia",
+      "I4400": "Cerebral Palsy",
+      "I4500": "Cerebrovascular Accident (CVA), Transient Ischemic Attack (TIA), or Stroke",
+      "I4800": "Non-Alzheimer's Dementia",
+      "I4900": "Hemiplegia or Hemiparesis",
+      "I5000": "Paraplegia",
+      "I5100": "Quadriplegia",
+      "I5200": "Multiple Sclerosis (MS)",
+      "I5250": "Huntington's Disease",
+      "I5300": "Parkinson's Disease",
+      "I5350": "Tourette's Syndrome",
+      "I5400": "Seizure Disorder or Epilepsy",
+      "I5500": "Traumatic Brain Injury (TBI)",
+      "I5600": "Malnutrition (protein or calorie) or at risk for malnutrition",
+      "I5700": "Anxiety Disorder",
+      "I5800": "Depression (other than bipolar)",
+      "I5900": "Bipolar Disorder",
+      "I5950": "Psychotic Disorder (other than schizophrenia)",
+      "I6000": "Schizophrenia",
+      "I6100": "Post Traumatic Stress Disorder (PTSD)",
+      "I6200": "Asthma, Chronic Obstructive Pulmonary Disease (COPD), or Chronic Lung Disease",
+      "I6300": "Respiratory Failure",
+      "I6500": "Cataracts, Glaucoma, or Macular Degeneration",
+      "I7900": "None of the above active diagnoses within the last 7 days",
+      "I8000": "Additional active diagnoses"
+    },
+    "N": {
+      "N0300": "Injections",
+      "N0350A": "Insulin — number of days injected",
+      "N0350B": "Insulin — ordered change in insulin dose in last 7 days",
+      "N0415A": "High-Risk Drug — Antipsychotic",
+      "N0415B": "High-Risk Drug — Antianxiety",
+      "N0415C": "High-Risk Drug — Antidepressant",
+      "N0415D": "High-Risk Drug — Hypnotic",
+      "N0415E": "High-Risk Drug — Anticoagulant",
+      "N0415F": "High-Risk Drug — Antibiotic",
+      "N0415G": "High-Risk Drug — Diuretic",
+      "N0415H": "High-Risk Drug — Opioid",
+      "N0415I": "High-Risk Drug — Antiplatelet",
+      "N0415J": "High-Risk Drug — Hypoglycemic",
+      "N0415Z": "High-Risk Drug — None of the above",
+      "N0450A": "Antipsychotic Medication Review — received since admission/prior OBRA?",
+      "N0450B": "Antipsychotic Medication Review — gradual dose reduction (GDR) attempted",
+      "N0450C": "Antipsychotic Medication Review — date of last attempted GDR",
+      "N0450D": "Antipsychotic Medication Review — physician documented GDR clinically contraindicated",
+      "N0450E": "Antipsychotic Medication Review — date physician documented GDR clinically contraindicated",
+      "N2001": "Drug Regimen Review — drug regimen reviewed",
+      "N2003": "Medication Follow-up — contact and action completed by next calendar day",
+      "N2005": "Medication Intervention — contact/action completed each time issues identified"
+    },
+    "O": {
+      "O0110A1": "Chemotherapy",
+      "O0110A2": "Chemotherapy — IV",
+      "O0110A3": "Chemotherapy — Oral",
+      "O0110A10": "Chemotherapy — Other",
+      "O0110B1": "Radiation",
+      "O0110C1": "Oxygen therapy",
+      "O0110C2": "Oxygen therapy — Continuous",
+      "O0110C3": "Oxygen therapy — Intermittent",
+      "O0110C4": "Oxygen therapy — High-concentration",
+      "O0110D1": "Suctioning",
+      "O0110D2": "Suctioning — Scheduled",
+      "O0110D3": "Suctioning — As needed",
+      "O0110E1": "Tracheostomy care",
+      "O0110F1": "Invasive Mechanical Ventilator (ventilator or respirator)",
+      "O0110G1": "Non-invasive Mechanical Ventilator",
+      "O0110G2": "Non-invasive Mechanical Ventilator — BiPAP",
+      "O0110G3": "Non-invasive Mechanical Ventilator — CPAP",
+      "O0110H1": "IV Medications",
+      "O0110H2": "IV Medications — Vasoactive",
+      "O0110H3": "IV Medications — Antibiotics",
+      "O0110H4": "IV Medications — Anticoagulant",
+      "O0110H10": "IV Medications — Other",
+      "O0110I1": "Transfusions",
+      "O0110J1": "Dialysis",
+      "O0110J2": "Dialysis — Hemodialysis",
+      "O0110J3": "Dialysis — Peritoneal dialysis",
+      "O0110K1": "Hospice care",
+      "O0110M1": "Isolation or quarantine for active infectious disease",
+      "O0110O1": "IV Access",
+      "O0110O2": "IV Access — Peripheral",
+      "O0110O3": "IV Access — Midline",
+      "O0110O4": "IV Access — Central (e.g., PICC, tunneled, port)",
+      "O0110Z1": "None of the above",
+      "O0250A": "Influenza Vaccine — received in this facility?",
+      "O0250B": "Influenza Vaccine — date received",
+      "O0250C": "Influenza Vaccine — reason not received",
+      "O0300A": "Pneumococcal Vaccine — up to date?",
+      "O0300B": "Pneumococcal Vaccine — reason not received",
+      "O0400A1": "Speech-Language Pathology and Audiology Services — Individual minutes",
+      "O0400A2": "Speech-Language Pathology and Audiology Services — Concurrent minutes",
+      "O0400A3": "Speech-Language Pathology and Audiology Services — Group minutes",
+      "O0400A3A": "Speech-Language Pathology and Audiology Services — Co-treatment minutes",
+      "O0400A4": "Speech-Language Pathology and Audiology Services — Days (at least 15 minutes/day)",
+      "O0400A5": "Speech-Language Pathology and Audiology Services — Therapy start date",
+      "O0400A6": "Speech-Language Pathology and Audiology Services — Therapy end date",
+      "O0400B1": "Occupational Therapy — Individual minutes",
+      "O0400B2": "Occupational Therapy — Concurrent minutes",
+      "O0400B3": "Occupational Therapy — Group minutes",
+      "O0400B3A": "Occupational Therapy — Co-treatment minutes",
+      "O0400B4": "Occupational Therapy — Days (at least 15 minutes/day)",
+      "O0400B5": "Occupational Therapy — Therapy start date",
+      "O0400B6": "Occupational Therapy — Therapy end date",
+      "O0400C1": "Physical Therapy — Individual minutes",
+      "O0400C2": "Physical Therapy — Concurrent minutes",
+      "O0400C3": "Physical Therapy — Group minutes",
+      "O0400C3A": "Physical Therapy — Co-treatment minutes",
+      "O0400C4": "Physical Therapy — Days (at least 15 minutes/day)",
+      "O0400C5": "Physical Therapy — Therapy start date",
+      "O0400C6": "Physical Therapy — Therapy end date",
+      "O0400D1": "Respiratory Therapy — Total minutes",
+      "O0400D2": "Respiratory Therapy — Days (at least 15 minutes/day)",
+      "O0400E1": "Psychological Therapy — Total minutes",
+      "O0400E2": "Psychological Therapy — Days (at least 15 minutes/day)",
+      "O0400F1": "Recreational Therapy — Total minutes",
+      "O0400F2": "Recreational Therapy — Days (at least 15 minutes/day)",
+      "O0420": "Distinct Calendar Days of Therapy",
+      "O0425A1": "Part A Speech-Language Pathology and Audiology Services — Individual minutes",
+      "O0425A2": "Part A Speech-Language Pathology and Audiology Services — Concurrent minutes",
+      "O0425A3": "Part A Speech-Language Pathology and Audiology Services — Group minutes",
+      "O0425A4": "Part A Speech-Language Pathology and Audiology Services — Co-treatment minutes",
+      "O0425A5": "Part A Speech-Language Pathology and Audiology Services — Days",
+      "O0425B1": "Part A Occupational Therapy — Individual minutes",
+      "O0425B2": "Part A Occupational Therapy — Concurrent minutes",
+      "O0425B3": "Part A Occupational Therapy — Group minutes",
+      "O0425B4": "Part A Occupational Therapy — Co-treatment minutes",
+      "O0425B5": "Part A Occupational Therapy — Days",
+      "O0425C1": "Part A Physical Therapy — Individual minutes",
+      "O0425C2": "Part A Physical Therapy — Concurrent minutes",
+      "O0425C3": "Part A Physical Therapy — Group minutes",
+      "O0425C4": "Part A Physical Therapy — Co-treatment minutes",
+      "O0425C5": "Part A Physical Therapy — Days",
+      "O0430": "Distinct Calendar Days of Part A Therapy",
+      "O0500A": "Restorative Nursing Programs — Range of motion (passive), number of days",
+      "O0500B": "Restorative Nursing Programs — Range of motion (active), number of days",
+      "O0500C": "Restorative Nursing Programs — Splint or brace assistance, number of days",
+      "O0500D": "Restorative Nursing Programs — Bed mobility, number of days",
+      "O0500E": "Restorative Nursing Programs — Transfer, number of days",
+      "O0500F": "Restorative Nursing Programs — Walking, number of days",
+      "O0500G": "Restorative Nursing Programs — Dressing and/or grooming, number of days",
+      "O0500H": "Restorative Nursing Programs — Eating and/or swallowing, number of days",
+      "O0500I": "Restorative Nursing Programs — Amputation/prostheses care, number of days",
+      "O0500J": "Restorative Nursing Programs — Communication, number of days"
+    }
+  },
+  "pdf_labels": {
+    "I": {
+      "I0020": "Indicate the resident’s primary medical condition category",
+      "I0020B": "ICD Code Enter Code MDS 3",
+      "I0100": "Cancer (with or without metastasis)",
+      "I0200": "Anemia (e",
+      "I0300": "Atrial Fibrillation or Other Dysrhythmias (e",
+      "I0400": "Coronary Artery Disease (CAD) (e",
+      "I0500": "Deep Venous Thrombosis (DVT), Pulmonary Embolus (PE), or Pulmonary Thrombo-Embolism (PTE)",
+      "I0600": "Heart Failure (e",
+      "I0700": "Hypertension",
+      "I0800": "Orthostatic Hypotension",
+      "I0900": "Peripheral Vascular Disease (PVD) or Peripheral Arterial Disease (PAD)",
+      "I1100": "Cirrhosis",
+      "I1200": "Gastroesophageal Reflux Disease (GERD) or Ulcer (e",
+      "I1300": "Ulcerative Colitis, Crohn's Disease, or Inflammatory Bowel Disease",
+      "I1400": "Benign Prostatic Hyperplasia (BPH)",
+      "I1500": "Renal Insufficiency, Renal Failure, or End-Stage Renal Disease (ESRD)",
+      "I1550": "Neurogenic Bladder",
+      "I1650": "Obstructive Uropathy",
+      "I1700": "Multidrug-Resistant Organism (MDRO)",
+      "I2000": "Pneumonia",
+      "I2100": "Septicemia",
+      "I2200": "Tuberculosis",
+      "I2300": "Urinary Tract Infection (UTI) (LAST 30 DAYS)",
+      "I2400": "Viral Hepatitis (e",
+      "I2500": "Wound Infection (other than foot)",
+      "I2900": "Diabetes Mellitus (DM) (e",
+      "I3100": "Hyponatremia",
+      "I3200": "Hyperkalemia",
+      "I3300": "Hyperlipidemia (e",
+      "I3400": "Thyroid Disorder (e",
+      "I3700": "Arthritis (e",
+      "I3800": "Osteoporosis",
+      "I3900": "Hip Fracture - any hip fracture that has a relationship to current status, treatments, monitoring (e",
+      "I4000": "Other Fracture",
+      "I4200": "Alzheimer's Disease",
+      "I4300": "Aphasia",
+      "I4400": "Cerebral Palsy",
+      "I4500": "Cerebrovascular Accident (CVA), Transient Ischemic Attack (TIA), or Stroke",
+      "I4800": "Non-Alzheimer's Dementia (e",
+      "I4900": "Hemiplegia or Hemiparesis",
+      "I5000": "Paraplegia",
+      "I5100": "Quadriplegia",
+      "I5200": "Multiple Sclerosis (MS)",
+      "I5250": "Huntington's Disease",
+      "I5300": "Parkinson's Disease",
+      "I5350": "Tourette's Syndrome",
+      "I5400": "Seizure Disorder or Epilepsy",
+      "I5500": "Traumatic Brain Injury (TBI)",
+      "I5600": "Malnutrition (protein or calorie) or at risk for malnutrition",
+      "I5700": "Anxiety Disorder",
+      "I5800": "Depression (other than bipolar)",
+      "I5900": "Bipolar Disorder",
+      "I5950": "Psychotic Disorder (other than schizophrenia)",
+      "I6000": "Schizophrenia (e",
+      "I6100": "Post Traumatic Stress Disorder (PTSD)",
+      "I6200": "Asthma, Chronic Obstructive Pulmonary Disease (COPD), or Chronic Lung Disease (e",
+      "I6300": "Respiratory Failure Vision",
+      "I6500": "Cataracts, Glaucoma, or Macular Degeneration",
+      "I7900": "None of the above active diagnoses within the last 7 days",
+      "I8000": "Additional active diagnoses"
+    },
+    "N": {
+      "N0300": "Injections",
+      "N0350A": "",
+      "N0350B": "",
+      "N0415A": "",
+      "N0415B": "",
+      "N0415C": "",
+      "N0415D": "",
+      "N0415E": "",
+      "N0415F": "",
+      "N0415G": "",
+      "N0415H": "",
+      "N0415I": "",
+      "N0415J": "",
+      "N0415Z": "",
+      "N0450A": "",
+      "N0450B": ", , Has a GDR been attempted? 2",
+      "N0450C": ", , Date of last attempted GDR",
+      "N0450D": ", and , Physician documented GDR as clinically contraindicated",
+      "N0450E": "1",
+      "N2001": "Drug Regimen Review - Complete only if A0310B = 01",
+      "N2003": "Medication Follow-up - Complete only if",
+      "N2005": "Medication Intervention - Complete only if A0310H = 1"
+    },
+    "O": {
+      "O0110A1": "",
+      "O0110A2": "",
+      "O0110A3": "",
+      "O0110A10": "",
+      "O0110B1": "",
+      "O0110C1": "",
+      "O0110C2": "",
+      "O0110C3": "",
+      "O0110C4": "",
+      "O0110D1": "",
+      "O0110D2": "",
+      "O0110D3": "",
+      "O0110E1": "",
+      "O0110F1": "",
+      "O0110G1": "",
+      "O0110G2": "",
+      "O0110G3": "",
+      "O0110H1": "",
+      "O0110H2": "",
+      "O0110H3": "",
+      "O0110H4": "",
+      "O0110H10": "",
+      "O0110I1": "",
+      "O0110J1": "",
+      "O0110J2": "",
+      "O0110J3": "",
+      "O0110K1": "",
+      "O0110M1": "",
+      "O0110O1": "",
+      "O0110O2": "",
+      "O0110O3": "",
+      "O0110O4": "",
+      "O0110Z1": "",
+      "O0250A": "",
+      "O0250B": ", Date influenza vaccine received",
+      "O0250C": ", If influenza vaccine not received, state reason",
+      "O0300A": "A",
+      "O0300B": ", If Pneumococcal vaccine not received, state reason",
+      "O0400A1": "",
+      "O0400A2": "",
+      "O0400A3": "",
+      "O0400A3A": "",
+      "O0400A4": "",
+      "O0400A5": ", Therapy start date Enter Number of Minutes 3A",
+      "O0400A6": "",
+      "O0400B1": "",
+      "O0400B2": "",
+      "O0400B3": "",
+      "O0400B3A": "",
+      "O0400B4": "",
+      "O0400B5": ", Therapy start date Enter Number of Minutes 3A",
+      "O0400B6": "",
+      "O0400C1": "",
+      "O0400C2": "",
+      "O0400C3": "",
+      "O0400C3A": "",
+      "O0400C4": "",
+      "O0400C5": ", Therapy start date Enter Number of Minutes 3A",
+      "O0400C6": "",
+      "O0400D1": "",
+      "O0400D2": "",
+      "O0400E1": "",
+      "O0400E2": "",
+      "O0400F1": "",
+      "O0400F2": "",
+      "O0420": ", Distinct Calendar Days of Therapy",
+      "O0425A1": "",
+      "O0425A2": "",
+      "O0425A3": "",
+      "O0425A4": "",
+      "O0425A5": "",
+      "O0425B1": "",
+      "O0425B2": "",
+      "O0425B3": "",
+      "O0425B4": "",
+      "O0425B5": "",
+      "O0425C1": "",
+      "O0425C2": "",
+      "O0425C3": "",
+      "O0425C4": "",
+      "O0425C5": "",
+      "O0430": ", Distinct Calendar Days of Part A Therapy",
+      "O0500A": "",
+      "O0500B": "",
+      "O0500C": "",
+      "O0500D": "",
+      "O0500E": "",
+      "O0500F": "",
+      "O0500G": "",
+      "O0500H": "",
+      "O0500I": "",
+      "O0500J": ""
+    }
+  },
+  "chunks": {
+    "I": {
+      "I0020": "Indicate the resident’s primary medical condition category. Complete only if A0310B = 01 or if state requires completion with an OBRA assessment Indicate the resident's primary medical condition category that best describes the primary reason for admission 01. Stroke. 02. Non-Traumatic Brain Dysfunction. 03. Traumatic Brain Dysfunction. 04. Non-Traumatic Spinal Cord Dysfunction. 05. Traumatic Spinal Cord Dysfunction. 06. Progressive Neurological Conditions. 07. Other Neurological Conditions. 08. Amputation 09. Hip and Knee Replacement. 10. Fractures and Other Multiple Trauma. 11. Other Orthopedic Conditions. 12. Debility, Cardiorespiratory Conditions. 13. Medically Complex Conditions",
+      "I0020B": "ICD Code Enter Code MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 30 of 58 Resident Identifier Date Section I. Active Diagnoses. Active Diagnoses in the last 7 days - Check all that apply. Diagnoses listed in parentheses are provided as examples and should not be considered as all-inclusive lists. Cancer",
+      "I0100": "Cancer (with or without metastasis). Heart/Circulation",
+      "I0200": "Anemia (e.g., aplastic, iron deficiency, pernicious, and sickle cell)",
+      "I0300": "Atrial Fibrillation or Other Dysrhythmias (e.g., bradycardias and tachycardias)",
+      "I0400": "Coronary Artery Disease (CAD) (e.g., angina, myocardial infarction, and atherosclerotic heart disease (ASHD))",
+      "I0500": "Deep Venous Thrombosis (DVT), Pulmonary Embolus (PE), or Pulmonary Thrombo-Embolism (PTE)",
+      "I0600": "Heart Failure (e.g., congestive heart failure (CHF) and pulmonary edema)",
+      "I0700": "Hypertension",
+      "I0800": "Orthostatic Hypotension",
+      "I0900": "Peripheral Vascular Disease (PVD) or Peripheral Arterial Disease (PAD). Gastrointestinal",
+      "I1100": "Cirrhosis",
+      "I1200": "Gastroesophageal Reflux Disease (GERD) or Ulcer (e.g., esophageal, gastric, and peptic ulcers)",
+      "I1300": "Ulcerative Colitis, Crohn's Disease, or Inflammatory Bowel Disease. Genitourinary",
+      "I1400": "Benign Prostatic Hyperplasia (BPH)",
+      "I1500": "Renal Insufficiency, Renal Failure, or End-Stage Renal Disease (ESRD)",
+      "I1550": "Neurogenic Bladder",
+      "I1650": "Obstructive Uropathy. Infections",
+      "I1700": "Multidrug-Resistant Organism (MDRO)",
+      "I2000": "Pneumonia",
+      "I2100": "Septicemia",
+      "I2200": "Tuberculosis",
+      "I2300": "Urinary Tract Infection (UTI) (LAST 30 DAYS)",
+      "I2400": "Viral Hepatitis (e.g., Hepatitis A, B, C, D, and E)",
+      "I2500": "Wound Infection (other than foot). Metabolic",
+      "I2900": "Diabetes Mellitus (DM) (e.g., diabetic retinopathy, nephropathy, and neuropathy)",
+      "I3100": "Hyponatremia",
+      "I3200": "Hyperkalemia",
+      "I3300": "Hyperlipidemia (e.g., hypercholesterolemia)",
+      "I3400": "Thyroid Disorder (e.g., hypothyroidism, hyperthyroidism, and Hashimoto's thyroiditis). Musculoskeletal",
+      "I3700": "Arthritis (e.g., degenerative joint disease (DJD), osteoarthritis, and rheumatoid arthritis (RA))",
+      "I3800": "Osteoporosis",
+      "I3900": "Hip Fracture - any hip fracture that has a relationship to current status, treatments, monitoring (e.g., sub-capital fractures, and fractures of the trochanter and femoral neck)",
+      "I4000": "Other Fracture. Neurological",
+      "I4200": "Alzheimer's Disease",
+      "I4300": "Aphasia",
+      "I4400": "Cerebral Palsy",
+      "I4500": "Cerebrovascular Accident (CVA), Transient Ischemic Attack (TIA), or Stroke",
+      "I4800": "Non-Alzheimer's Dementia (e.g. Lewy body dementia, vascular or multi-infarct dementia; mixed dementia; frontotemporal dementia such as Pick's disease; and dementia related to stroke, Parkinson's or Creutzfeldt-Jakob diseases). Neurological Diagnoses continued on next page. MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 31 of 58 Resident Identifier Date Section I. Active Diagnoses. Active Diagnoses in the last 7 days - Check all that apply. Diagnoses listed in parentheses are provided as examples and should not be considered as all-inclusive lists. Neurological - Continued",
+      "I4900": "Hemiplegia or Hemiparesis",
+      "I5000": "Paraplegia",
+      "I5100": "Quadriplegia",
+      "I5200": "Multiple Sclerosis (MS)",
+      "I5250": "Huntington's Disease",
+      "I5300": "Parkinson's Disease",
+      "I5350": "Tourette's Syndrome",
+      "I5400": "Seizure Disorder or Epilepsy",
+      "I5500": "Traumatic Brain Injury (TBI). Nutritional",
+      "I5600": "Malnutrition (protein or calorie) or at risk for malnutrition. Psychiatric/Mood Disorder",
+      "I5700": "Anxiety Disorder",
+      "I5800": "Depression (other than bipolar)",
+      "I5900": "Bipolar Disorder",
+      "I5950": "Psychotic Disorder (other than schizophrenia)",
+      "I6000": "Schizophrenia (e.g., schizoaffective and schizophreniform disorders)",
+      "I6100": "Post Traumatic Stress Disorder (PTSD). Pulmonary",
+      "I6200": "Asthma, Chronic Obstructive Pulmonary Disease (COPD), or Chronic Lung Disease (e.g., chronic bronchitis and restrictive lung diseases such as asbestosis)",
+      "I6300": "Respiratory Failure Vision",
+      "I6500": "Cataracts, Glaucoma, or Macular Degeneration. None of Above",
+      "I7900": "None of the above active diagnoses within the last 7 days. Other",
+      "I8000": "Additional active diagnoses. Enter diagnosis on line and ICD code in boxes. Include the decimal for the code in the appropriate box. A. B. C. D. E. F. G. H. I. J"
+    },
+    "N": {
+      "N0300": "Injections. Enter Days Record the number of days that injections of any type were received during the last 7 days or since admission/entry or reentry if less than 7 days. If 0 Skip to N0415, High-Risk Drug Classes: Use and Indication. N0350. Insulin. A. Insulin injections - Record the number of days that insulin injections were received during the last 7 days or since admission/entry or reentry if less than 7 days. Enter Days B. Orders for insulin - Record the number of days the physician (or authorized assistant or practitioner) changed the resident's insulin orders during the last 7 days or since admission/entry or reentry if less than 7 days. Enter Days N0415. High-Risk Drug Classes: Use and Indication 1. Is taking Check if the resident is taking any medications by pharmacological classification, not how it is used, during the last 7 days or since admission/entry or reentry if less than 7 days 2. Indication noted If Column 1 is checked, check if there is an indication noted for all medications in the drug class 1. Is taking 2. Indication noted Check all that apply A. Antipsychotic B. Antianxiety. C. Antidepressant. D. Hypnotic. E. Anticoagulant (e.g., warfarin, heparin, or low-molecular weight heparin) F. Antibiotic . G. Diuretic. H. Opioid. I. Antiplatelet. J. Hypoglycemic (including insulin). Z. None of the above. MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 43 of 58 Resident Identifier Date Section N. Medications. N0450. Antipsychotic Medication Review. A. Did the resident receive antipsychotic medications since admission/entry or reentry or the prior OBRA assessment, whichever is more recent? 0. No - Antipsychotics were not received. Skip",
+      "N0450B": ", , Has a GDR been attempted? 2. Yes - Antipsychotics were received on a PRN basis only. Continue to , Has a GDR been attempted? 3. Yes - Antipsychotics were received on a routine and PRN basis.. Continue to , Has a GDR been attempted? Enter Code B. Has a gradual dose reduction (GDR) been attempted? 0. No Skip to",
+      "N0450C": ", , Date of last attempted GDR. Enter Code C. Date of last attempted GDR: Month _ Day _ Year D. Physician documented GDR as clinically contraindicated 0. No - GDR has not been documented by a physician as clinically contraindicated Skip",
+      "N0450D": ", and , Physician documented GDR as clinically contraindicated. 1. Yes Continue to",
+      "N0450E": "1. Yes - Antipsychotics were received on a routine basis only.. Continue to , Date physician documented GDR as clinically contraindicated. 1. Yes - GDR has been documented by a physician as clinically contraindicated Continue to , Date physician documented . GDR as clinically contraindicated. Enter Code E. Date physician documented GDR as clinically contraindicated: Month _ Day _ Year",
+      "N2001": "Drug Regimen Review - Complete only if A0310B = 01. Did a complete drug regimen review identify potential clinically significant medication issues? 0. No - No issues found during review. 1. Yes - Issues found during review. 9. NA - Resident is not taking any medications. Enter Code =1. Did the facility contact a physician (or physician-designee) by midnight of the next calendar day and complete prescribed/ recommended actions in response to the identified potential clinically significant medication issues? 0. No. 1. Yes. Enter Code",
+      "N2003": "Medication Follow-up - Complete only if",
+      "N2005": "Medication Intervention - Complete only if A0310H = 1. Did the facility contact and complete physician (or physician-designee) prescribed/recommended actions by midnight of the next calendar day each time potential clinically significant medication issues were identified since the admission? 0. No. 1. Yes. 9. NA - There were no potential clinically significant medication issues identified since admission or resident is not taking any medications. Enter Code"
+    },
+    "O": {
+      "O0250B": ", Date influenza vaccine received. Enter Code B. Date influenza vaccine received Complete date and skip to",
+      "O0250C": ", If influenza vaccine not received, state reason. 1. Yes Continue to",
+      "O0300A": "A. Is the resident's Pneumococcal vaccination up to date? 0. No Continue to",
+      "O0300B": ", If Pneumococcal vaccine not received, state reason. 1. Yes Skip to O0400, Therapies. Enter Code B. If Pneumococcal vaccine not received, state reason: 1. Not eligible - medical contraindication. 2. Offered and declined. 3. Not offered. Enter Code MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 46 of 58 Resident Identifier Date Section O. Special Treatments, Procedures, and Programs. O0400. Therapies. A. Speech-Language Pathology and Audiology Services. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually in the last 7 days. Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident in the last 7 days. Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents in the last 7 days. If the sum of individual, concurrent, and group minutes is zero, skip to",
+      "O0400A5": ", Therapy start date Enter Number of Minutes 3A. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions in the last 7 days. Enter Number of Days 4. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. 5. Therapy start date - record the date the most recent therapy regimen (since the most recent entry) started. Month _ Day _ Year 6. Therapy end date - record the date the most recent therapy regimen (since the most recent entry) ended - enter dashes if therapy is ongoing. Month _ Day _ Year B. Occupational Therapy. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually in the last 7 days. Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident in the last 7 days. Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents in the last 7 days. If the sum of individual, concurrent, and group minutes is zero, skip to",
+      "O0400B5": ", Therapy start date Enter Number of Minutes 3A. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions in the last 7 days. Enter Number of Days 4. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. 5. Therapy start date - record the date the most recent therapy regimen (since the most recent entry) started. Month _ Day _ Year 6. Therapy end date - record the date the most recent therapy regimen (since the most recent entry) ended - enter dashes if therapy is ongoing. Month _ Day _ Year O0400 continued on next page MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 47 of 58 Resident Identifier Date Section O. Special Treatments, Procedures, and Programs. O0400. Therapies - Continued. C. Physical Therapy. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually in the last 7 days. Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident in the last 7 days. Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents in the last 7 days. If the sum of individual, concurrent, and group minutes is zero, skip to",
+      "O0400C5": ", Therapy start date Enter Number of Minutes 3A. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions in the last 7 days. Enter Number of Days 4. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. 5. Therapy start date - record the date the most recent therapy regimen (since the most recent entry) started. Month _ Day _ Year 6. Therapy end date - record the date the most recent therapy regimen (since the most recent entry) ended - enter dashes if therapy is ongoing. Month _ Day _ Year D. Respiratory Therapy. 1. Total minutes - record the total number of minutes this therapy was administered to the resident in the last 7 days. If zero, skip to O0400E, Psychological Therapy. Enter Number of Minutes 2. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. Enter Number of Days E. Psychological Therapy (by any licensed mental health professional). 1. Total minutes - record the total number of minutes this therapy was administered to the resident in the last 7 days. If zero, skip to O0400F, Recreational Therapy. Enter Number of Minutes 2. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. Enter Number of Days F. Recreational Therapy (includes recreational and music therapy). 1. Total minutes - record the total number of minutes this therapy was administered to the resident in the last 7 days. If zero, skip to",
+      "O0420": ", Distinct Calendar Days of Therapy. Enter Number of Minutes 2. Days - record the number of days this therapy was administered for at least 15 minutes a day in the last 7 days. Enter Number of Days . Distinct Calendar Days of Therapy. Record the number of calendar days that the resident received Speech-Language Pathology and Audiology Services, Occupational Therapy, or Physical Therapy for at least 15 minutes in the past 7 days. Enter Number of Days MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 48 of 58 Resident Identifier Date Section O. Special Treatments, Procedures, and Programs. O0425. Part A Therapies. Complete only if A0310H = 1. A. Speech-Language Pathology and Audiology Services. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents since the start date of the resident's most recent Medicare Part A stay (A2400B). If the sum of individual, concurrent, and group minutes is zero, skip to O0425B, Occupational Therapy Enter Number of Minutes 4. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Days 5. Days - record the number of days this therapy was administered for at least 15 minutes a day since the start date of the resident's most recent Medicare Part A stay (A2400B). B. Occupational Therapy. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents since the start date of the resident's most recent Medicare Part A stay (A2400B). If the sum of individual, concurrent, and group minutes is zero, skip to O0425C, Physical Therapy Enter Number of Minutes 4. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Days 5. Days - record the number of days this therapy was administered for at least 15 minutes a day since the start date of the resident's most recent Medicare Part A stay (A2400B). C. Physical Therapy. Enter Number of Minutes 1. Individual minutes - record the total number of minutes this therapy was administered to the resident individually since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 2. Concurrent minutes - record the total number of minutes this therapy was administered to the resident concurrently with one other resident since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Minutes 3. Group minutes - record the total number of minutes this therapy was administered to the resident as part of a group of residents since the start date of the resident's most recent Medicare Part A stay (A2400B). If the sum of individual, concurrent, and group minutes is zero, skip to",
+      "O0430": ", Distinct Calendar Days of Part A Therapy . Enter Number of Minutes 4. Co-treatment minutes - record the total number of minutes this therapy was administered to the resident in co-treatment sessions since the start date of the resident's most recent Medicare Part A stay (A2400B). Enter Number of Days 5. Days - record the number of days this therapy was administered for at least 15 minutes a day since the start date of the resident's most recent Medicare Part A stay (A2400B). . Distinct Calendar Days of Part A Therapy. Complete only if A0310H = 1 Record the number of calendar days that the resident received Speech-Language Pathology and Audiology Services, Occupational Therapy, or Physical Therapy for at least 15 minutes since the start date of the resident's most recent Medicare Part A stay (A2400B) Enter Number of Days MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 49 of 58 Resident Identifier Date Section O. Special Treatments, Procedures, and Programs. O0500. Restorative Nursing Programs. Record the number of days each of the following restorative programs was performed (for at least 15 minutes a day) in the last 7 calendar days (enter 0 if none or less than 15 minutes daily). Number of Days. Technique. A. Range of motion (passive). B. Range of motion (active). C. Splint or brace assistance. Number of Days. Training and Skill Practice In: D. Bed mobility. E. Transfer. F. Walking. G. Dressing and/or grooming. H. Eating and/or swallowing. I. Amputation/prostheses care. J. Communication"
+    }
+  },
+  "patterns": {
+    "I": {
+      "I0020": [
+        "\\bPrimary\\s+medical\\s+condition\\s+category\\b"
+      ],
+      "I0020B": [
+        "\\bPrimary\\s+medical\\s+condition\\s+ICD\\s+code\\b"
+      ],
+      "I0100": [
+        "\\bCancer\\b",
+        "\\bwithout\\s+metastasis\\b",
+        "\\bCancer\\s+\\(with\\b",
+        "\\bwithout\\s+metastasis\\)\\b"
+      ],
+      "I0200": [
+        "\\bAnemia\\b",
+        "\\be\\.g\\b",
+        "\\baplastic\\b",
+        "\\biron\\s+deficiency\\b",
+        "\\bpernicious\\b",
+        "\\bsickle\\s+cell\\b",
+        "\\bAnemia\\s+\\(e\\b"
+      ],
+      "I0300": [
+        "\\bAtrial\\s+Fibrillation\\b",
+        "\\bOther\\s+Dysrhythmias\\b",
+        "\\be\\.g\\b",
+        "\\bbradycardias\\b",
+        "\\btachycardias\\b",
+        "\\bOther\\s+Dysrhythmias\\s+\\(e\\b"
+      ],
+      "I0400": [
+        "\\bCoronary\\s+Artery\\s+Disease\\s+\\(CAD\\)\\b",
+        "\\bCAD\\b",
+        "\\be\\.g\\b",
+        "\\bangina\\b",
+        "\\bmyocardial\\s+infarction\\b",
+        "\\batherosclerotic\\s+heart\\s+disease\\s+\\(ASHD\\b",
+        "\\bCoronary\\s+Artery\\s+Disease\\s+\\(CAD\\)\\s+\\(e\\b"
+      ],
+      "I0500": [
+        "\\bDeep\\s+Venous\\s+Thrombosis\\s+\\(DVT\\)\\b",
+        "\\bPulmonary\\s+Embolus\\s+\\(PE\\)\\b",
+        "\\bPulmonary\\s+Thrombo[-\\s]?Embolism\\s+\\(PTE\\)\\b",
+        "\\bDVT\\b",
+        "\\bPTE\\b"
+      ],
+      "I0600": [
+        "\\bHeart\\s+Failure\\b",
+        "\\be\\.g\\b",
+        "\\bcongestive\\s+heart\\s+failure\\s+\\(CHF\\b",
+        "\\bHeart\\s+Failure\\s+\\(e\\b"
+      ],
+      "I0700": [
+        "\\bHypertension\\b"
+      ],
+      "I0800": [
+        "\\bOrthostatic\\s+Hypotension\\b"
+      ],
+      "I0900": [
+        "\\bPeripheral\\s+Vascular\\s+Disease\\s+\\(PVD\\)\\b",
+        "\\bPeripheral\\s+Arterial\\s+Disease\\s+\\(PAD\\)\\b",
+        "\\bPVD\\b",
+        "\\bPAD\\b"
+      ],
+      "I1100": [
+        "\\bCirrhosis\\b"
+      ],
+      "I1200": [
+        "\\bGastroesophageal\\s+Reflux\\s+Disease\\s+\\(GERD\\)\\b",
+        "\\bUlcer\\b",
+        "\\bGERD\\b",
+        "\\be\\.g\\b",
+        "\\besophageal\\b",
+        "\\bgastric\\b",
+        "\\bpeptic\\s+ulcers\\b",
+        "\\bUlcer\\s+\\(e\\b"
+      ],
+      "I1300": [
+        "\\bUlcerative\\s+Colitis\\b",
+        "\\bCrohn's\\s+Disease\\b",
+        "\\bInflammatory\\s+Bowel\\s+Disease\\b"
+      ],
+      "I1400": [
+        "\\bBenign\\s+Prostatic\\s+Hyperplasia\\s+\\(BPH\\)\\b",
+        "\\bBPH\\b"
+      ],
+      "I1500": [
+        "\\bRenal\\s+Insufficiency\\b",
+        "\\bRenal\\s+Failure\\b",
+        "\\bEnd[-\\s]?Stage\\s+Renal\\s+Disease\\s+\\(ESRD\\)\\b",
+        "\\bESRD\\b"
+      ],
+      "I1550": [
+        "\\bNeurogenic\\s+Bladder\\b"
+      ],
+      "I1650": [
+        "\\bObstructive\\s+Uropathy\\b"
+      ],
+      "I1700": [
+        "\\bMultidrug[-\\s]?Resistant\\s+Organism\\s+\\(MDRO\\)\\b",
+        "\\bMDRO\\b"
+      ],
+      "I2000": [
+        "\\bPneumonia\\b"
+      ],
+      "I2100": [
+        "\\bSepticemia\\b"
+      ],
+      "I2200": [
+        "\\bTuberculosis\\b"
+      ],
+      "I2300": [
+        "\\bUrinary\\s+Tract\\s+Infection\\s+\\(UTI\\)\\s+\\(LAST\\s+30\\s+DAYS\\)\\b",
+        "\\bUTI\\b",
+        "\\bLAST\\s+30\\s+DAYS\\b"
+      ],
+      "I2400": [
+        "\\bViral\\s+Hepatitis\\b",
+        "\\be\\.g\\b",
+        "\\bHepatitis\\s+A\\b",
+        "\\bViral\\s+Hepatitis\\s+\\(e\\b"
+      ],
+      "I2500": [
+        "\\bWound\\s+Infection\\s+\\(other\\s+than\\s+foot\\)\\b",
+        "\\bother\\s+than\\s+foot\\b"
+      ],
+      "I2900": [
+        "\\bDiabetes\\s+Mellitus\\s+\\(DM\\)\\b",
+        "\\be\\.g\\b",
+        "\\bdiabetic\\s+retinopathy\\b",
+        "\\bnephropathy\\b",
+        "\\bneuropathy\\b",
+        "\\bDiabetes\\s+Mellitus\\s+\\(DM\\)\\s+\\(e\\b"
+      ],
+      "I3100": [
+        "\\bHyponatremia\\b"
+      ],
+      "I3200": [
+        "\\bHyperkalemia\\b"
+      ],
+      "I3300": [
+        "\\bHyperlipidemia\\b",
+        "\\be\\.g\\b",
+        "\\bhypercholesterolemia\\b",
+        "\\bHyperlipidemia\\s+\\(e\\b"
+      ],
+      "I3400": [
+        "\\bThyroid\\s+Disorder\\b",
+        "\\be\\.g\\b",
+        "\\bhypothyroidism\\b",
+        "\\bhyperthyroidism\\b",
+        "\\bHashimoto's\\s+thyroiditis\\b",
+        "\\bThyroid\\s+Disorder\\s+\\(e\\b"
+      ],
+      "I3700": [
+        "\\bArthritis\\b",
+        "\\be\\.g\\b",
+        "\\bdegenerative\\s+joint\\s+disease\\s+\\(DJD\\b",
+        "\\bArthritis\\s+\\(e\\b"
+      ],
+      "I3800": [
+        "\\bOsteoporosis\\b"
+      ],
+      "I3900": [
+        "\\bHip\\s+Fracture\\b",
+        "\\be\\.g\\b",
+        "\\bsub[-\\s]?capital\\s+fractures\\b",
+        "\\bfractures\\s+of\\s+the\\s+trochanter\\b",
+        "\\bfemoral\\s+neck\\b",
+        "\\bHip\\s+Fracture\\s+[-\\s]?\\s+any\\s+hip\\s+fracture\\s+that\\s+has\\s+a\\s+relationship\\s+to\\s+current\\s+status\\b",
+        "\\btreatments\\b",
+        "\\bmonitoring\\s+\\(e\\b"
+      ],
+      "I4000": [
+        "\\bOther\\s+Fracture\\b"
+      ],
+      "I4200": [
+        "\\bAlzheimer's\\s+Disease\\b"
+      ],
+      "I4300": [
+        "\\bAphasia\\b"
+      ],
+      "I4400": [
+        "\\bCerebral\\s+Palsy\\b"
+      ],
+      "I4500": [
+        "\\bCerebrovascular\\s+Accident\\s+\\(CVA\\)\\b",
+        "\\bTransient\\s+Ischemic\\s+Attack\\s+\\(TIA\\)\\b",
+        "\\bStroke\\b",
+        "\\bCVA\\b",
+        "\\bTIA\\b"
+      ],
+      "I4800": [
+        "\\bNon[-\\s]?Alzheimer's\\s+Dementia\\b",
+        "\\bNon[-\\s]?Alzheimer's\\s+Dementia\\s+\\(e\\b"
+      ],
+      "I4900": [
+        "\\bHemiplegia\\b",
+        "\\bHemiparesis\\b"
+      ],
+      "I5000": [
+        "\\bParaplegia\\b"
+      ],
+      "I5100": [
+        "\\bQuadriplegia\\b"
+      ],
+      "I5200": [
+        "\\bMultiple\\s+Sclerosis\\s+\\(MS\\)\\b"
+      ],
+      "I5250": [
+        "\\bHuntington's\\s+Disease\\b"
+      ],
+      "I5300": [
+        "\\bParkinson's\\s+Disease\\b"
+      ],
+      "I5350": [
+        "\\bTourette's\\s+Syndrome\\b"
+      ],
+      "I5400": [
+        "\\bSeizure\\s+Disorder\\b",
+        "\\bEpilepsy\\b"
+      ],
+      "I5500": [
+        "\\bTraumatic\\s+Brain\\s+Injury\\s+\\(TBI\\)\\b",
+        "\\bTBI\\b"
+      ],
+      "I5600": [
+        "\\bMalnutrition\\s+\\(protein\\b",
+        "\\bcalorie\\)\\b",
+        "\\bat\\s+risk\\s+for\\s+malnutrition\\b",
+        "\\bprotein\\b",
+        "\\bcalorie\\b"
+      ],
+      "I5700": [
+        "\\bAnxiety\\s+Disorder\\b"
+      ],
+      "I5800": [
+        "\\bDepression\\s+\\(other\\s+than\\s+bipolar\\)\\b",
+        "\\bother\\s+than\\s+bipolar\\b"
+      ],
+      "I5900": [
+        "\\bBipolar\\s+Disorder\\b"
+      ],
+      "I5950": [
+        "\\bPsychotic\\s+Disorder\\s+\\(other\\s+than\\s+schizophrenia\\)\\b",
+        "\\bother\\s+than\\s+schizophrenia\\b"
+      ],
+      "I6000": [
+        "\\bSchizophrenia\\b",
+        "\\be\\.g\\b",
+        "\\bschizoaffective\\b",
+        "\\bschizophreniform\\s+disorders\\b",
+        "\\bSchizophrenia\\s+\\(e\\b"
+      ],
+      "I6100": [
+        "\\bPost\\s+Traumatic\\s+Stress\\s+Disorder\\s+\\(PTSD\\)\\b",
+        "\\bPTSD\\b"
+      ],
+      "I6200": [
+        "\\bAsthma\\b",
+        "\\bChronic\\s+Obstructive\\s+Pulmonary\\s+Disease\\s+\\(COPD\\)\\b",
+        "\\bChronic\\s+Lung\\s+Disease\\b",
+        "\\bCOPD\\b",
+        "\\be\\.g\\b",
+        "\\bchronic\\s+bronchitis\\b",
+        "\\brestrictive\\s+lung\\s+diseases\\s+such\\s+as\\s+asbestosis\\b",
+        "\\bChronic\\s+Lung\\s+Disease\\s+\\(e\\b"
+      ],
+      "I6300": [
+        "\\bRespiratory\\s+Failure\\b",
+        "\\bRespiratory\\s+Failure\\s+Vision\\b"
+      ],
+      "I6500": [
+        "\\bCataracts\\b",
+        "\\bGlaucoma\\b",
+        "\\bMacular\\s+Degeneration\\b"
+      ],
+      "I7900": [
+        "\\bNone\\s+of\\s+the\\s+above\\s+active\\s+diagnoses\\s+within\\s+the\\s+last\\s+7\\s+days\\b"
+      ],
+      "I8000": [
+        "\\bAdditional\\s+active\\s+diagnoses\\b"
+      ]
+    },
+    "N": {
+      "N0300": [
+        "\\bInjections\\b",
+        "\\bauthorized\\s+assistant\\b",
+        "\\bpractitioner\\b",
+        "\\be\\.g\\b",
+        "\\bwarfarin\\b",
+        "\\bheparin\\b",
+        "\\blow[-\\s]?molecular\\s+weight\\s+heparin\\b",
+        "\\bincluding\\s+insulin\\b"
+      ],
+      "N0350A": [
+        "\\bInsulin\\s+—\\s+number\\s+of\\s+days\\s+injected\\b"
+      ],
+      "N0350B": [
+        "\\bInsulin\\s+—\\s+ordered\\s+change\\s+in\\s+insulin\\s+dose\\s+in\\s+last\\s+7\\s+days\\b"
+      ],
+      "N0415A": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Antipsychotic\\b"
+      ],
+      "N0415B": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Antianxiety\\b"
+      ],
+      "N0415C": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Antidepressant\\b"
+      ],
+      "N0415D": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Hypnotic\\b"
+      ],
+      "N0415E": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Anticoagulant\\b"
+      ],
+      "N0415F": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Antibiotic\\b"
+      ],
+      "N0415G": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Diuretic\\b"
+      ],
+      "N0415H": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Opioid\\b"
+      ],
+      "N0415I": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Antiplatelet\\b"
+      ],
+      "N0415J": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+Hypoglycemic\\b"
+      ],
+      "N0415Z": [
+        "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+None\\s+of\\s+the\\s+above\\b"
+      ],
+      "N0450A": [
+        "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+received\\s+since\\s+admission\\b",
+        "\\bprior\\s+OBRA\\?\\b"
+      ],
+      "N0450B": [
+        "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+gradual\\s+dose\\s+reduction\\s+\\(GDR\\)\\s+attempted\\b",
+        "\\bGDR\\b",
+        "\\bHas\\s+a\\s+GDR\\s+been\\s+attempted\\?\\s+2\\b"
+      ],
+      "N0450C": [
+        "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+date\\s+of\\s+last\\s+attempted\\s+GDR\\b",
+        "\\bDate\\s+of\\s+last\\s+attempted\\s+GDR\\b"
+      ],
+      "N0450D": [
+        "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+physician\\s+documented\\s+GDR\\s+clinically\\s+contraindicated\\b",
+        "\\bPhysician\\s+documented\\s+GDR\\s+as\\s+clinically\\s+contraindicated\\b"
+      ],
+      "N0450E": [
+        "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+date\\s+physician\\s+documented\\s+GDR\\s+clinically\\s+contraindicated\\b"
+      ],
+      "N2001": [
+        "\\bDrug\\s+Regimen\\s+Review\\s+—\\s+drug\\s+regimen\\s+reviewed\\b",
+        "\\bphysician[-\\s]?designee\\b"
+      ],
+      "N2003": [
+        "\\bMedication\\s+Follow[-\\s]?up\\s+—\\s+contact\\b",
+        "\\baction\\s+completed\\s+by\\s+next\\s+calendar\\s+day\\b"
+      ],
+      "N2005": [
+        "\\bMedication\\s+Intervention\\s+—\\s+contact\\b",
+        "\\baction\\s+completed\\s+each\\s+time\\s+issues\\s+identified\\b",
+        "\\bphysician[-\\s]?designee\\b"
+      ]
+    },
+    "O": {
+      "O0110A1": [
+        "\\bChemotherapy\\b"
+      ],
+      "O0110A2": [
+        "\\bChemotherapy\\s+—\\s+IV\\b"
+      ],
+      "O0110A3": [
+        "\\bChemotherapy\\s+—\\s+Oral\\b"
+      ],
+      "O0110A10": [
+        "\\bChemotherapy\\s+—\\s+Other\\b"
+      ],
+      "O0110B1": [
+        "\\bRadiation\\b"
+      ],
+      "O0110C1": [
+        "\\bOxygen\\s+therapy\\b"
+      ],
+      "O0110C2": [
+        "\\bOxygen\\s+therapy\\s+—\\s+Continuous\\b"
+      ],
+      "O0110C3": [
+        "\\bOxygen\\s+therapy\\s+—\\s+Intermittent\\b"
+      ],
+      "O0110C4": [
+        "\\bOxygen\\s+therapy\\s+—\\s+High[-\\s]?concentration\\b"
+      ],
+      "O0110D1": [
+        "\\bSuctioning\\b"
+      ],
+      "O0110D2": [
+        "\\bSuctioning\\s+—\\s+Scheduled\\b"
+      ],
+      "O0110D3": [
+        "\\bSuctioning\\s+—\\s+As\\s+needed\\b"
+      ],
+      "O0110E1": [
+        "\\bTracheostomy\\s+care\\b"
+      ],
+      "O0110F1": [
+        "\\bInvasive\\s+Mechanical\\s+Ventilator\\s+\\(ventilator\\b",
+        "\\brespirator\\)\\b"
+      ],
+      "O0110G1": [
+        "\\bNon[-\\s]?invasive\\s+Mechanical\\s+Ventilator\\b"
+      ],
+      "O0110G2": [
+        "\\bNon[-\\s]?invasive\\s+Mechanical\\s+Ventilator\\s+—\\s+BiPAP\\b"
+      ],
+      "O0110G3": [
+        "\\bNon[-\\s]?invasive\\s+Mechanical\\s+Ventilator\\s+—\\s+CPAP\\b"
+      ],
+      "O0110H1": [
+        "\\bIV\\s+Medications\\b"
+      ],
+      "O0110H2": [
+        "\\bIV\\s+Medications\\s+—\\s+Vasoactive\\b"
+      ],
+      "O0110H3": [
+        "\\bIV\\s+Medications\\s+—\\s+Antibiotics\\b"
+      ],
+      "O0110H4": [
+        "\\bIV\\s+Medications\\s+—\\s+Anticoagulant\\b"
+      ],
+      "O0110H10": [
+        "\\bIV\\s+Medications\\s+—\\s+Other\\b"
+      ],
+      "O0110I1": [
+        "\\bTransfusions\\b"
+      ],
+      "O0110J1": [
+        "\\bDialysis\\b"
+      ],
+      "O0110J2": [
+        "\\bDialysis\\s+—\\s+Hemodialysis\\b"
+      ],
+      "O0110J3": [
+        "\\bDialysis\\s+—\\s+Peritoneal\\s+dialysis\\b"
+      ],
+      "O0110K1": [
+        "\\bHospice\\s+care\\b"
+      ],
+      "O0110M1": [
+        "\\bIsolation\\b",
+        "\\bquarantine\\s+for\\s+active\\s+infectious\\s+disease\\b"
+      ],
+      "O0110O1": [
+        "\\bIV\\s+Access\\b"
+      ],
+      "O0110O2": [
+        "\\bIV\\s+Access\\s+—\\s+Peripheral\\b"
+      ],
+      "O0110O3": [
+        "\\bIV\\s+Access\\s+—\\s+Midline\\b"
+      ],
+      "O0110O4": [
+        "\\bIV\\s+Access\\s+—\\s+Central\\s+\\(e\\.g\\b",
+        "\\bPICC\\b",
+        "\\btunneled\\b",
+        "\\bport\\)\\b"
+      ],
+      "O0110Z1": [],
+      "O0250A": [
+        "\\bInfluenza\\s+Vaccine\\s+—\\s+received\\s+in\\s+this\\s+facility\\?\\b"
+      ],
+      "O0250B": [
+        "\\bInfluenza\\s+Vaccine\\s+—\\s+date\\s+received\\b",
+        "\\bDate\\s+influenza\\s+vaccine\\s+received\\b"
+      ],
+      "O0250C": [
+        "\\bInfluenza\\s+Vaccine\\s+—\\s+reason\\s+not\\s+received\\b",
+        "\\bIf\\s+influenza\\s+vaccine\\s+not\\s+received\\b",
+        "\\bstate\\s+reason\\b"
+      ],
+      "O0300A": [
+        "\\bPneumococcal\\s+Vaccine\\s+—\\s+up\\s+to\\s+date\\?\\b"
+      ],
+      "O0300B": [
+        "\\bPneumococcal\\s+Vaccine\\s+—\\s+reason\\s+not\\s+received\\b",
+        "\\bIf\\s+Pneumococcal\\s+vaccine\\s+not\\s+received\\b",
+        "\\bstate\\s+reason\\b"
+      ],
+      "O0400A1": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0400A2": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0400A3": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0400A3A": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0400A4": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0400A5": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Therapy\\s+start\\s+date\\b",
+        "\\bsince\\s+the\\s+most\\s+recent\\s+entry\\b"
+      ],
+      "O0400A6": [
+        "\\bSpeech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Therapy\\s+end\\s+date\\b"
+      ],
+      "O0400B1": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0400B2": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0400B3": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0400B3A": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0400B4": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0400B5": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Therapy\\s+start\\s+date\\b",
+        "\\bsince\\s+the\\s+most\\s+recent\\s+entry\\b"
+      ],
+      "O0400B6": [
+        "\\bOccupational\\s+Therapy\\s+—\\s+Therapy\\s+end\\s+date\\b"
+      ],
+      "O0400C1": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0400C2": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0400C3": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0400C3A": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0400C4": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0400C5": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Therapy\\s+start\\s+date\\b",
+        "\\bsince\\s+the\\s+most\\s+recent\\s+entry\\b",
+        "\\bby\\s+any\\s+licensed\\s+mental\\s+health\\s+professional\\b",
+        "\\bincludes\\s+recreational\\b",
+        "\\bmusic\\s+therapy\\b"
+      ],
+      "O0400C6": [
+        "\\bPhysical\\s+Therapy\\s+—\\s+Therapy\\s+end\\s+date\\b"
+      ],
+      "O0400D1": [
+        "\\bRespiratory\\s+Therapy\\s+—\\s+Total\\s+minutes\\b"
+      ],
+      "O0400D2": [
+        "\\bRespiratory\\s+Therapy\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0400E1": [
+        "\\bPsychological\\s+Therapy\\s+—\\s+Total\\s+minutes\\b"
+      ],
+      "O0400E2": [
+        "\\bPsychological\\s+Therapy\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0400F1": [
+        "\\bRecreational\\s+Therapy\\s+—\\s+Total\\s+minutes\\b"
+      ],
+      "O0400F2": [
+        "\\bRecreational\\s+Therapy\\s+—\\s+Days\\s+\\(at\\s+least\\s+15\\s+minutes\\b",
+        "\\bday\\)\\b"
+      ],
+      "O0420": [
+        "\\bDistinct\\s+Calendar\\s+Days\\s+of\\s+Therapy\\b"
+      ],
+      "O0425A1": [
+        "\\bPart\\s+A\\s+Speech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0425A2": [
+        "\\bPart\\s+A\\s+Speech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0425A3": [
+        "\\bPart\\s+A\\s+Speech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0425A4": [
+        "\\bPart\\s+A\\s+Speech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0425A5": [
+        "\\bPart\\s+A\\s+Speech[-\\s]?Language\\s+Pathology\\b",
+        "\\bAudiology\\s+Services\\s+—\\s+Days\\b"
+      ],
+      "O0425B1": [
+        "\\bPart\\s+A\\s+Occupational\\s+Therapy\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0425B2": [
+        "\\bPart\\s+A\\s+Occupational\\s+Therapy\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0425B3": [
+        "\\bPart\\s+A\\s+Occupational\\s+Therapy\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0425B4": [
+        "\\bPart\\s+A\\s+Occupational\\s+Therapy\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0425B5": [
+        "\\bPart\\s+A\\s+Occupational\\s+Therapy\\s+—\\s+Days\\b"
+      ],
+      "O0425C1": [
+        "\\bPart\\s+A\\s+Physical\\s+Therapy\\s+—\\s+Individual\\s+minutes\\b"
+      ],
+      "O0425C2": [
+        "\\bPart\\s+A\\s+Physical\\s+Therapy\\s+—\\s+Concurrent\\s+minutes\\b"
+      ],
+      "O0425C3": [
+        "\\bPart\\s+A\\s+Physical\\s+Therapy\\s+—\\s+Group\\s+minutes\\b"
+      ],
+      "O0425C4": [
+        "\\bPart\\s+A\\s+Physical\\s+Therapy\\s+—\\s+Co[-\\s]?treatment\\s+minutes\\b"
+      ],
+      "O0425C5": [
+        "\\bPart\\s+A\\s+Physical\\s+Therapy\\s+—\\s+Days\\b"
+      ],
+      "O0430": [
+        "\\bDistinct\\s+Calendar\\s+Days\\s+of\\s+Part\\s+A\\s+Therapy\\b",
+        "\\bfor\\s+at\\s+least\\s+15\\s+minutes\\s+a\\s+day\\b",
+        "\\bless\\s+than\\s+15\\s+minutes\\s+daily\\b",
+        "\\bpassive\\b",
+        "\\bactive\\b"
+      ],
+      "O0500A": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Range\\s+of\\s+motion\\s+\\(passive\\)\\b",
+        "\\bnumber\\s+of\\s+days\\b",
+        "\\bpassive\\b"
+      ],
+      "O0500B": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Range\\s+of\\s+motion\\s+\\(active\\)\\b",
+        "\\bnumber\\s+of\\s+days\\b",
+        "\\bactive\\b"
+      ],
+      "O0500C": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Splint\\b",
+        "\\bbrace\\s+assistance\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500D": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Bed\\s+mobility\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500E": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Transfer\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500F": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Walking\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500G": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Dressing\\b",
+        "\\bgrooming\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500H": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Eating\\b",
+        "\\bswallowing\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500I": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Amputation\\b",
+        "\\bprostheses\\s+care\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ],
+      "O0500J": [
+        "\\bRestorative\\s+Nursing\\s+Programs\\s+—\\s+Communication\\b",
+        "\\bnumber\\s+of\\s+days\\b"
+      ]
+    }
+  }
+}
