@@ -128,7 +128,7 @@ class TestMDSSchema:
         assert "1" in codes and "2" in codes
 
     def test_section_i_has_diabetes(self, schema):
-        item = schema.get_item("I2000")
+        item = schema.get_item("I2900")
         assert item is not None
         assert "Diabetes" in item.label
 
@@ -148,14 +148,43 @@ class TestMDSSchema:
         assert item.item_type == MDSItemType.BOOLEAN
 
     def test_section_n_medications(self, schema):
-        item = schema.get_item("N0400A")
+        item = schema.get_item("N0415A")
         assert item is not None
-        assert item.item_type == MDSItemType.INTEGER
+        assert item.item_type == MDSItemType.MULTI
+        assert "1" in item.option_codes()  # Is taking
+        assert "2" in item.option_codes()  # Indication noted
+
+    def test_section_n_n0450_antipsychotic_review(self, schema):
+        a = schema.get_item("N0450A")
+        b = schema.get_item("N0450B")
+        c = schema.get_item("N0450C")
+        d = schema.get_item("N0450D")
+        e = schema.get_item("N0450E")
+
+        assert a is not None and a.item_type == MDSItemType.SELECT
+        assert {"0", "1", "2", "3"}.issubset(set(a.option_codes()))
+        assert b is not None and b.item_type == MDSItemType.BOOLEAN
+        assert c is not None and c.item_type == MDSItemType.DATE
+        assert d is not None and d.item_type == MDSItemType.BOOLEAN
+        assert e is not None and e.item_type == MDSItemType.DATE
 
     def test_section_o_oxygen_therapy(self, schema):
-        item = schema.get_item("O0100C1")
+        item = schema.get_item("O0110C1")
         assert item is not None
         assert item.item_type == MDSItemType.BOOLEAN
+
+    def test_section_o_has_all_key_sub_items(self, schema):
+        for item_id in ("O0110A1", "O0110B1", "O0110F1", "O0110G1",
+                        "O0110H1", "O0110I1", "O0110J1", "O0110O1"):
+            assert schema.get_item(item_id) is not None, f"{item_id} missing from schema"
+
+    def test_section_o_pneumococcal_items(self, schema):
+        a = schema.get_item("O0300A")
+        b = schema.get_item("O0300B")
+        assert a is not None and a.item_type == MDSItemType.SELECT
+        assert {"0", "1"}.issubset(set(a.option_codes()))
+        assert b is not None and b.item_type == MDSItemType.SELECT
+        assert {"1", "2", "3"}.issubset(set(b.option_codes()))
 
 
 # ---------------------------------------------------------------------------
