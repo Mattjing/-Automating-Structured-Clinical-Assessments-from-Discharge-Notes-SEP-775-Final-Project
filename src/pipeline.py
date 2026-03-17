@@ -22,7 +22,9 @@ import argparse
 import json
 import logging
 import os
+import subprocess
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional, cast
 
 import pandas as pd
@@ -153,6 +155,9 @@ class ExtractionPipeline:
     medbert_model_name : str
         Hugging Face model checkpoint for the MedBERT extractor.
         Only used when ``extractor_type="medbert"``.
+    medbert_prefer_gpu : bool
+        Whether to run MedBERT on CUDA when available.
+        Only used when ``extractor_type="medbert"``.
     """
 
     def __init__(
@@ -182,6 +187,7 @@ class ExtractionPipeline:
         process_all_notes: bool = False,
         extractor_type: str = "llm",
         medbert_model_name: str = "d4data/biomedical-ner-all",
+        medbert_prefer_gpu: bool = True,
     ) -> None:
         self.source = source
         self.mimic_root = mimic_root
@@ -208,6 +214,7 @@ class ExtractionPipeline:
         self.process_all_notes = process_all_notes
         self.extractor_type = extractor_type.lower()
         self.medbert_model_name = medbert_model_name
+        self.medbert_prefer_gpu = medbert_prefer_gpu
         self._comparison_rows: List[Dict[str, Any]] = []
 
         # Shared schema instance
@@ -226,6 +233,8 @@ class ExtractionPipeline:
         list of MDSAssessment
             All extracted and mapped assessments.
         """
+        self._run_support_scripts()
+
         # 1. Load notes
         logger.info("Loading discharge notes from '%s'…", self.source)
         loader = MIMICDischargeLoader(
@@ -253,6 +262,7 @@ class ExtractionPipeline:
                 model_name=self.medbert_model_name,
                 sections=self.sections,
                 preprocess_input=self.preprocess_input,
+                prefer_gpu=self.medbert_prefer_gpu,
             )
             mapper: Any = MedBERTMapper(schema=self._schema, strict=self.strict_validation)
         else:
@@ -352,6 +362,40 @@ class ExtractionPipeline:
 
     def _ensure_output_dir(self) -> None:
         os.makedirs(self.output_dir, exist_ok=True)
+
+    def _run_support_scripts(self) -> None:
+        """Run helper scripts from scripts/ before extraction starts."""
+        repo_root = Path(__file__).resolve().parents[1]
+        scripts = [
+            repo_root / "scripts" / "extract_mds_sections_from_pdf.py",
+            repo_root / "scripts" / "preview_input_data.py",
+        ]
+
+        for script in scripts:
+            if not script.is_file():
+                logger.warning("Skipping missing support script: %s", script)
+                continue
+
+            logger.info("Running support script: %s", script.name)
+            try:
+                completed = subprocess.run(
+                    [sys.executable, str(script)],
+                    cwd=str(repo_root),
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                )
+                if completed.returncode == 0:
+                    logger.info("Support script completed: %s", script.name)
+                else:
+                    logger.warning(
+                        "Support script failed (%s, exit=%d). stderr: %s",
+                        script.name,
+                        completed.returncode,
+                        (completed.stderr or "").strip()[:500],
+                    )
+            except Exception as exc:
+                logger.warning("Could not run support script '%s': %s", script.name, exc)
 
     def _select_notes_to_process(self, notes: List[Any]) -> List[Any]:
         """Return either a sample subset or the full note list."""
@@ -624,6 +668,11 @@ class ExtractionPipeline:
 def _build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run MDS I/N/O extraction pipeline")
     parser.add_argument(
+        "--config",
+        default="config/config.yaml",
+        help="Optional config file path used for defaults (default: config/config.yaml)",
+    )
+    parser.add_argument(
         "--source",
         default="data/discharge.csv/discharge.csv",
         help="Path to discharge notes CSV/XLSX or 'pyhealth'",
@@ -689,6 +738,20 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Hugging Face model checkpoint for the MedBERT extractor (only used with --extractor medbert)",
     )
     parser.add_argument(
+        "--medbert-prefer-gpu",
+        dest="medbert_prefer_gpu",
+        action="store_true",
+        default=None,
+        help="Prefer CUDA GPU for MedBERT when available",
+    )
+    parser.add_argument(
+        "--medbert-force-cpu",
+        dest="medbert_prefer_gpu",
+        action="store_false",
+        default=None,
+        help="Force CPU for MedBERT even if CUDA is available",
+    )
+    parser.add_argument(
         "--mode",
         choices=sorted(_PROCESSING_MODE_CONFIGS.keys()),
         default=None,
@@ -748,6 +811,54 @@ def _resolve_processing_mode(args: argparse.Namespace) -> argparse.Namespace:
     return args
 
 
+def _load_config_defaults(config_path: str) -> Dict[str, Any]:
+    """Load optional YAML config defaults; return empty dict on any failure."""
+    if not config_path or not os.path.isfile(config_path):
+        return {}
+
+    try:
+        import yaml
+    except Exception as exc:
+        logger.warning("Could not import PyYAML to read config '%s': %s", config_path, exc)
+        return {}
+
+    try:
+        with open(config_path, "r", encoding="utf-8") as fh:
+            loaded: Any = yaml.safe_load(fh) or {}
+    except Exception as exc:
+        logger.warning("Could not read config '%s': %s", config_path, exc)
+        return {}
+
+    if not isinstance(loaded, dict):
+        return {}
+    return cast(Dict[str, Any], loaded)
+
+
+def _coerce_bool(value: Any, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "y", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "n", "off"}:
+            return False
+    return default
+
+
+def _resolve_medbert_gpu_preference(args: argparse.Namespace) -> bool:
+    """Resolve MedBERT GPU preference using CLI first, then config fallback."""
+    if args.medbert_prefer_gpu is not None:
+        return bool(args.medbert_prefer_gpu)
+
+    config = _load_config_defaults(args.config)
+    extraction_raw = config.get("extraction", {})
+    if isinstance(extraction_raw, dict):
+        extraction_cfg = cast(Dict[str, Any], extraction_raw)
+        return _coerce_bool(extraction_cfg.get("medbert_prefer_gpu"), True)
+    return True
+
+
 def _main() -> int:
     try:
         from dotenv import load_dotenv
@@ -763,6 +874,7 @@ def _main() -> int:
     )
     args = _build_arg_parser().parse_args()
     args = _resolve_processing_mode(args)
+    medbert_prefer_gpu = _resolve_medbert_gpu_preference(args)
 
     pipeline = ExtractionPipeline(
         source=args.source,
@@ -777,6 +889,7 @@ def _main() -> int:
         process_all_notes=args.process_all_notes,
         extractor_type=args.extractor_type,
         medbert_model_name=args.medbert_model,
+        medbert_prefer_gpu=medbert_prefer_gpu,
     )
     assessments = pipeline.run()
     logger.info("Pipeline complete. Generated %d assessments.", len(assessments))

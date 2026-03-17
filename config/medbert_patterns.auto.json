@@ -92,12 +92,12 @@
       "N0415I": "High-Risk Drug — Antiplatelet",
       "N0415J": "High-Risk Drug — Hypoglycemic",
       "N0415Z": "High-Risk Drug — None of the above",
+      "N2001": "Drug Regimen Review — drug regimen reviewed",
       "N0450A": "Antipsychotic Medication Review — received since admission/prior OBRA?",
       "N0450B": "Antipsychotic Medication Review — gradual dose reduction (GDR) attempted",
       "N0450C": "Antipsychotic Medication Review — date of last attempted GDR",
       "N0450D": "Antipsychotic Medication Review — physician documented GDR clinically contraindicated",
       "N0450E": "Antipsychotic Medication Review — date physician documented GDR clinically contraindicated",
-      "N2001": "Drug Regimen Review — drug regimen reviewed",
       "N2003": "Medication Follow-up — contact and action completed by next calendar day",
       "N2005": "Medication Intervention — contact/action completed each time issues identified"
     },
@@ -274,12 +274,12 @@
       "N0415I": "",
       "N0415J": "",
       "N0415Z": "",
+      "N2001": "Drug Regimen Review - Complete only if A0310B = 01",
       "N0450A": "",
       "N0450B": ", , Has a GDR been attempted? 2",
       "N0450C": ", , Date of last attempted GDR",
       "N0450D": ", and , Physician documented GDR as clinically contraindicated",
       "N0450E": "1",
-      "N2001": "Drug Regimen Review - Complete only if A0310B = 01",
       "N2003": "Medication Follow-up - Complete only if",
       "N2005": "Medication Intervention - Complete only if A0310H = 1"
     },
@@ -443,11 +443,11 @@
     },
     "N": {
       "N0300": "Injections. Enter Days Record the number of days that injections of any type were received during the last 7 days or since admission/entry or reentry if less than 7 days. If 0 Skip to N0415, High-Risk Drug Classes: Use and Indication. N0350. Insulin. A. Insulin injections - Record the number of days that insulin injections were received during the last 7 days or since admission/entry or reentry if less than 7 days. Enter Days B. Orders for insulin - Record the number of days the physician (or authorized assistant or practitioner) changed the resident's insulin orders during the last 7 days or since admission/entry or reentry if less than 7 days. Enter Days N0415. High-Risk Drug Classes: Use and Indication 1. Is taking Check if the resident is taking any medications by pharmacological classification, not how it is used, during the last 7 days or since admission/entry or reentry if less than 7 days 2. Indication noted If Column 1 is checked, check if there is an indication noted for all medications in the drug class 1. Is taking 2. Indication noted Check all that apply A. Antipsychotic B. Antianxiety. C. Antidepressant. D. Hypnotic. E. Anticoagulant (e.g., warfarin, heparin, or low-molecular weight heparin) F. Antibiotic . G. Diuretic. H. Opioid. I. Antiplatelet. J. Hypoglycemic (including insulin). Z. None of the above. MDS 3.0 Nursing Home Comprehensive (NC) Version 1.18.11 Effective 10/01/2023 Page 43 of 58 Resident Identifier Date Section N. Medications. N0450. Antipsychotic Medication Review. A. Did the resident receive antipsychotic medications since admission/entry or reentry or the prior OBRA assessment, whichever is more recent? 0. No - Antipsychotics were not received. Skip",
+      "N2001": "Drug Regimen Review - Complete only if A0310B = 01. Did a complete drug regimen review identify potential clinically significant medication issues? 0. No - No issues found during review. 1. Yes - Issues found during review. 9. NA - Resident is not taking any medications. Enter Code =1. Did the facility contact a physician (or physician-designee) by midnight of the next calendar day and complete prescribed/ recommended actions in response to the identified potential clinically significant medication issues? 0. No. 1. Yes. Enter Code",
       "N0450B": ", , Has a GDR been attempted? 2. Yes - Antipsychotics were received on a PRN basis only. Continue to , Has a GDR been attempted? 3. Yes - Antipsychotics were received on a routine and PRN basis.. Continue to , Has a GDR been attempted? Enter Code B. Has a gradual dose reduction (GDR) been attempted? 0. No Skip to",
       "N0450C": ", , Date of last attempted GDR. Enter Code C. Date of last attempted GDR: Month _ Day _ Year D. Physician documented GDR as clinically contraindicated 0. No - GDR has not been documented by a physician as clinically contraindicated Skip",
       "N0450D": ", and , Physician documented GDR as clinically contraindicated. 1. Yes Continue to",
       "N0450E": "1. Yes - Antipsychotics were received on a routine basis only.. Continue to , Date physician documented GDR as clinically contraindicated. 1. Yes - GDR has been documented by a physician as clinically contraindicated Continue to , Date physician documented . GDR as clinically contraindicated. Enter Code E. Date physician documented GDR as clinically contraindicated: Month _ Day _ Year",
-      "N2001": "Drug Regimen Review - Complete only if A0310B = 01. Did a complete drug regimen review identify potential clinically significant medication issues? 0. No - No issues found during review. 1. Yes - Issues found during review. 9. NA - Resident is not taking any medications. Enter Code =1. Did the facility contact a physician (or physician-designee) by midnight of the next calendar day and complete prescribed/ recommended actions in response to the identified potential clinically significant medication issues? 0. No. 1. Yes. Enter Code",
       "N2003": "Medication Follow-up - Complete only if",
       "N2005": "Medication Intervention - Complete only if A0310H = 1. Did the facility contact and complete physician (or physician-designee) prescribed/recommended actions by midnight of the next calendar day each time potential clinically significant medication issues were identified since the admission? 0. No. 1. Yes. 9. NA - There were no potential clinically significant medication issues identified since admission or resident is not taking any medications. Enter Code"
     },
@@ -798,6 +798,10 @@
       "N0415Z": [
         "\\bHigh[-\\s]?Risk\\s+Drug\\s+—\\s+None\\s+of\\s+the\\s+above\\b"
       ],
+      "N2001": [
+        "\\bDrug\\s+Regimen\\s+Review\\s+—\\s+drug\\s+regimen\\s+reviewed\\b",
+        "\\bphysician[-\\s]?designee\\b"
+      ],
       "N0450A": [
         "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+received\\s+since\\s+admission\\b",
         "\\bprior\\s+OBRA\\?\\b"
@@ -817,10 +821,6 @@
       ],
       "N0450E": [
         "\\bAntipsychotic\\s+Medication\\s+Review\\s+—\\s+date\\s+physician\\s+documented\\s+GDR\\s+clinically\\s+contraindicated\\b"
-      ],
-      "N2001": [
-        "\\bDrug\\s+Regimen\\s+Review\\s+—\\s+drug\\s+regimen\\s+reviewed\\b",
-        "\\bphysician[-\\s]?designee\\b"
       ],
       "N2003": [
         "\\bMedication\\s+Follow[-\\s]?up\\s+—\\s+contact\\b",

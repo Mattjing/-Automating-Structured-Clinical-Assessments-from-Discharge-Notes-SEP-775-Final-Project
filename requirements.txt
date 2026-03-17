@@ -1,0 +1,14 @@
+pandas>=2.2
+openpyxl>=3.1
+tqdm>=4.66
+tenacity>=8.2
+openai>=1.30
+python-dotenv>=1.0
+PyYAML>=6.0
+pypdf>=5.0
+transformers>=4.45
+torch>=2.2
+pytest>=8.0
+
+# Optional: only needed when loading notes with source='pyhealth'
+pyhealth>=1.1

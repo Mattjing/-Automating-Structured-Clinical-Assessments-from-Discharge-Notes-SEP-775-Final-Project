@@ -33,6 +33,11 @@ logger = logging.getLogger(__name__)
 _DEFAULT_AUTO_PATTERN_PATH = Path(__file__).resolve().parents[1] / "config" / "medbert_patterns.auto.json"
 
 
+def _empty_ner_pipeline(_text: str) -> List[Dict[str, Any]]:
+    """Fallback NER pipeline that returns no entities."""
+    return []
+
+
 _GENERIC_SCHEMA_TOKENS: set[str] = {
     "active",
     "additional",
@@ -129,6 +134,8 @@ class MedBERTExtractor:
         Section filter (defaults to ``["I", "N", "O"]``).
     preprocess_input : bool
         Whether to run focused preprocessing before NER.
+    prefer_gpu : bool
+        Whether to place the NER model on CUDA when available.
     ner_pipeline : Any, optional
         Injected transformers pipeline (useful for testing/mocking).
     """
@@ -139,6 +146,7 @@ class MedBERTExtractor:
         model_name: str = "d4data/biomedical-ner-all",
         sections: Optional[List[str]] = None,
         preprocess_input: bool = True,
+        prefer_gpu: bool = True,
         ner_pipeline: Optional[Any] = None,
         auto_pattern_path: Optional[str] = None,
     ) -> None:
@@ -146,6 +154,7 @@ class MedBERTExtractor:
         self.model_name = model_name
         self.sections = [section.upper() for section in sections] if sections else ["I", "N", "O"]
         self.preprocess_input = preprocess_input
+        self.prefer_gpu = prefer_gpu
 
         # Build baseline rules from schema labels with item-type scoping.
         self.diagnosis_patterns: Dict[str, Tuple[str, ...]] = _schema_label_patterns(
@@ -206,19 +215,46 @@ class MedBERTExtractor:
         try:
             from transformers import AutoModelForTokenClassification, AutoTokenizer, pipeline  # type: ignore[import]
         except ImportError as exc:
-            raise ImportError(
-                "The 'transformers' package is required for MedBERT extraction. "
-                "Install it with: pip install transformers torch"
-            ) from exc
+            logger.warning(
+                "MedBERT NER dependencies are unavailable (%s). "
+                "Falling back to rule-only extraction. "
+                "Install with: pip install transformers torch",
+                exc,
+            )
+            return _empty_ner_pipeline
 
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        model = AutoModelForTokenClassification.from_pretrained(self.model_name)
-        return pipeline(
-            "token-classification",
-            model=model,
-            tokenizer=tokenizer,
-            aggregation_strategy="simple",
-        )
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            model = AutoModelForTokenClassification.from_pretrained(self.model_name)
+
+            device = -1
+            if self.prefer_gpu:
+                try:
+                    import torch  # type: ignore[import]
+
+                    if torch.cuda.is_available():
+                        device = 0
+                        logger.info("MedBERT using GPU (CUDA device 0).")
+                    else:
+                        logger.info("MedBERT using CPU (CUDA not available).")
+                except Exception as exc:
+                    logger.info("MedBERT using CPU (torch/cuda check failed: %s).", exc)
+
+            return pipeline(
+                "token-classification",
+                model=model,
+                tokenizer=tokenizer,
+                aggregation_strategy="simple",
+                device=device,
+            )
+        except Exception as exc:
+            logger.warning(
+                "MedBERT model initialization failed for '%s' (%s). "
+                "Falling back to rule-only extraction.",
+                self.model_name,
+                exc,
+            )
+            return _empty_ner_pipeline
 
     def _prepare_note_text(self, note_text: str) -> str:
         if not self.preprocess_input:

@@ -27,6 +27,8 @@ extraction:
   sections: ["I", "N", "O"]
   # Batch size for processing multiple notes
   batch_size: 10
+  # Prefer running MedBERT on CUDA when available
+  medbert_prefer_gpu: true
   # Whether to include extraction confidence scores
   include_confidence: true
 
