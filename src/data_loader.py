@@ -8,7 +8,8 @@ Supports two loading modes:
 
 import logging
 import os
-from typing import Dict, List, Optional
+from collections import defaultdict
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import pandas as pd
 
@@ -62,6 +63,13 @@ class MIMICDischargeLoader:
         Column name for the hospital admission identifier.
     text_col : str
         Column name containing the free-text discharge note.
+    structured_sources : dict[str, str], optional
+        Optional mapping of structured dataset names to file paths. Each
+        structured file is loaded and attached to notes via matching IDs.
+    structured_join_priority : sequence of str
+        Identifier columns used to join structured rows to notes. Columns are
+        attempted in order and only the columns present in each structured
+        file are used.
     """
 
     def __init__(
@@ -72,6 +80,8 @@ class MIMICDischargeLoader:
         subject_id_col: str = "subject_id",
         hadm_id_col: str = "hadm_id",
         text_col: str = "text",
+        structured_sources: Optional[Dict[str, str]] = None,
+        structured_join_priority: Optional[Sequence[str]] = None,
     ) -> None:
         self.source = source
         self.mimic_root = mimic_root
@@ -79,6 +89,11 @@ class MIMICDischargeLoader:
         self.subject_id_col = subject_id_col
         self.hadm_id_col = hadm_id_col
         self.text_col = text_col
+        self.structured_sources = structured_sources or {}
+        self.structured_join_priority = tuple(
+            structured_join_priority
+            or (self.note_id_col, self.hadm_id_col, self.subject_id_col)
+        )
         self._notes: List[DischargeNote] = []
 
     # ------------------------------------------------------------------
@@ -103,6 +118,10 @@ class MIMICDischargeLoader:
                 "'pyhealth'. Please provide either a path to an Excel/CSV file "
                 "or pass source='pyhealth'."
             )
+
+        if self.structured_sources:
+            self._attach_structured_data(self._notes)
+
         logger.info("Loaded %d discharge notes.", len(self._notes))
         return self._notes
 
@@ -132,17 +151,79 @@ class MIMICDischargeLoader:
     # Private helpers
     # ------------------------------------------------------------------
 
-    def _load_from_file(self, file_path: str) -> List[DischargeNote]:
-        """Load discharge notes from an Excel or CSV file."""
+    def _read_tabular_file(self, file_path: str) -> pd.DataFrame:
+        lower_path = file_path.lower()
         ext = os.path.splitext(file_path)[1].lower()
         if ext in (".xlsx", ".xls"):
-            df = pd.read_excel(file_path, dtype=str)
-        elif ext == ".csv":
-            df = pd.read_csv(file_path, dtype=str)
-        else:
-            raise ValueError(
-                f"Unsupported file format '{ext}'. Use .xlsx, .xls, or .csv."
+            return pd.read_excel(file_path, dtype=str)
+        if ext == ".csv" or lower_path.endswith(".csv.gz"):
+            return pd.read_csv(file_path, dtype=str)
+        raise ValueError(
+            f"Unsupported file format for '{file_path}'. Use .xlsx, .xls, .csv, or .csv.gz."
+        )
+
+    def _id_value(self, note: DischargeNote, col_name: str) -> str:
+        if col_name == self.note_id_col:
+            return note.note_id
+        if col_name == self.subject_id_col:
+            return note.subject_id
+        if col_name == self.hadm_id_col:
+            return note.hadm_id
+        return ""
+
+    def _attach_structured_data(self, notes: List[DischargeNote]) -> None:
+        for dataset_name, dataset_path in self.structured_sources.items():
+            if not os.path.isfile(dataset_path):
+                raise FileNotFoundError(
+                    f"Structured data source '{dataset_name}' was not found: {dataset_path}"
+                )
+
+            df = self._read_tabular_file(dataset_path).fillna("")
+            available_join_cols = [
+                col for col in self.structured_join_priority if col in df.columns
+            ]
+            if not available_join_cols:
+                logger.warning(
+                    "Skipping structured source '%s': none of join columns %s were found.",
+                    dataset_name,
+                    list(self.structured_join_priority),
+                )
+                continue
+
+            grouped_rows: Dict[Tuple[str, ...], List[Dict[str, str]]] = defaultdict(list)
+            for _, row in df.iterrows():
+                join_key = tuple(str(row[col]) for col in available_join_cols)
+                grouped_rows[join_key].append(
+                    {
+                        col: str(row[col])
+                        for col in df.columns
+                        if col not in available_join_cols
+                    }
+                )
+
+            attached_count = 0
+            for note in notes:
+                note_key = tuple(
+                    self._id_value(note, col_name) for col_name in available_join_cols
+                )
+                matches = grouped_rows.get(note_key, [])
+                if not matches:
+                    continue
+
+                note.metadata.setdefault("structured_data", {})
+                note.metadata["structured_data"][dataset_name] = matches
+                attached_count += 1
+
+            logger.info(
+                "Attached structured dataset '%s' to %d notes using join columns %s.",
+                dataset_name,
+                attached_count,
+                available_join_cols,
             )
+
+    def _load_from_file(self, file_path: str) -> List[DischargeNote]:
+        """Load discharge notes from an Excel or CSV file."""
+        df = self._read_tabular_file(file_path)
 
         # Validate required columns
         required = {

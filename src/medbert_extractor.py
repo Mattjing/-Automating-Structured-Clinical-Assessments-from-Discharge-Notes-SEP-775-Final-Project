@@ -176,9 +176,13 @@ class MedBERTExtractor:
 
         self._ner_pipeline = ner_pipeline or self._build_ner_pipeline()
 
-    def extract(self, note_text: str) -> Dict[str, Any]:
+    def extract(
+        self,
+        note_text: str,
+        note_metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """Extract MDS fields from a single discharge note."""
-        prepared = self._prepare_note_text(note_text)
+        prepared = self._prepare_note_text(note_text, note_metadata=note_metadata)
         entities = self._extract_entities(prepared)
 
         result: Dict[str, Any] = {}
@@ -256,10 +260,18 @@ class MedBERTExtractor:
             )
             return _empty_ner_pipeline
 
-    def _prepare_note_text(self, note_text: str) -> str:
+    def _prepare_note_text(
+        self,
+        note_text: str,
+        note_metadata: Optional[Dict[str, Any]] = None,
+    ) -> str:
         if not self.preprocess_input:
             return note_text or ""
-        return build_extraction_context(note_text, sections=self.sections)
+        return build_extraction_context(
+            note_text,
+            sections=self.sections,
+            note_metadata=note_metadata,
+        )
 
     def _get_items_to_extract(self) -> List[MDSItem]:
         items: List[MDSItem] = []

@@ -25,7 +25,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, Sequence, cast
 
 import pandas as pd
 from tqdm import tqdm
@@ -113,6 +113,11 @@ class ExtractionPipeline:
         Required when ``source="pyhealth"``.
     note_id_col, subject_id_col, hadm_id_col, text_col : str
         Column names for the file-based loader (ignored for pyhealth).
+    structured_sources : dict[str, str], optional
+        Optional mapping of structured dataset names to file paths.
+        These rows are attached to each note and used by preprocessing.
+    structured_join_priority : sequence of str, optional
+        Join-key priority for linking structured rows to notes.
     provider : str
         LLM provider (``"openai"``).
     model : str
@@ -168,6 +173,8 @@ class ExtractionPipeline:
         subject_id_col: str = "subject_id",
         hadm_id_col: str = "hadm_id",
         text_col: str = "text",
+        structured_sources: Optional[Dict[str, str]] = None,
+        structured_join_priority: Optional[Sequence[str]] = None,
         provider: str = "openai",
         model: str = "gpt-3.5-turbo",
         openai_api_key: Optional[str] = None,
@@ -195,6 +202,8 @@ class ExtractionPipeline:
         self.subject_id_col = subject_id_col
         self.hadm_id_col = hadm_id_col
         self.text_col = text_col
+        self.structured_sources = structured_sources or {}
+        self.structured_join_priority = structured_join_priority
         self.provider = provider
         self.model = model
         self.openai_api_key = openai_api_key
@@ -244,6 +253,8 @@ class ExtractionPipeline:
             subject_id_col=self.subject_id_col,
             hadm_id_col=self.hadm_id_col,
             text_col=self.text_col,
+            structured_sources=self.structured_sources,
+            structured_join_priority=self.structured_join_priority,
         )
         notes = loader.load()
         logger.info("Loaded %d notes.", len(notes))
@@ -296,6 +307,7 @@ class ExtractionPipeline:
                     comparison_result = extractor.extract_with_preprocessing_variants(
                         note.text,
                         modes=["heuristic", "llm_evidence"],
+                        note_metadata=note.metadata,
                     )
                     comparison_assessments: Dict[str, MDSAssessment] = {}
 
@@ -321,7 +333,7 @@ class ExtractionPipeline:
                         )
                     )
                 else:
-                    raw = extractor.extract(note.text)
+                    raw = extractor.extract(note.text, note_metadata=note.metadata)
                     assessment = mapper.map(
                         note_id=note.note_id,
                         subject_id=note.subject_id,

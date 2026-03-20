@@ -255,6 +255,22 @@ class TestLLMExtractorExtract:
             e.extract(SAMPLE_NOTE)
             mock_ctx.assert_called_once()
 
+    def test_extract_passes_note_metadata_to_preprocessor(self, schema):
+        with patch("src.extractor._build_openai_client", return_value=MagicMock()):
+            e = LLMExtractor(
+                schema=schema,
+                api_key="sk-test",
+                sections=["I", "N", "O"],
+                items_per_request=50,
+                preprocess_input=True,
+            )
+        e._call_llm = MagicMock(return_value=json.dumps({"confidence": {}}))
+        metadata = {"structured_data": {"diagnoses": [{"icd_code": "I10"}]}}
+
+        with patch("src.extractor.build_extraction_context", return_value="ctx") as mock_ctx:
+            e.extract(SAMPLE_NOTE, note_metadata=metadata)
+            assert mock_ctx.call_args.kwargs["note_metadata"] == metadata
+
     def test_extract_with_preprocessing_variants_returns_both_results(self, schema):
         with patch("src.extractor._build_openai_client", return_value=MagicMock()):
             e = LLMExtractor(

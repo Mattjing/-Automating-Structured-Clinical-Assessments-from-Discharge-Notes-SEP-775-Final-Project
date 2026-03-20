@@ -28,7 +28,11 @@ from tenacity import (
 )
 
 from src.mds_schema import MDSItem, MDSItemType, MDSSchema
-from src.preprocessor import build_extraction_context, clean_discharge_text
+from src.preprocessor import (
+    build_extraction_context,
+    clean_discharge_text,
+    format_structured_data_summary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -187,7 +191,11 @@ class LLMExtractor:
     # Public API
     # ------------------------------------------------------------------
 
-    def extract(self, note_text: str) -> Dict[str, Any]:
+    def extract(
+        self,
+        note_text: str,
+        note_metadata: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
         """
         Extract MDS field values from a single discharge note.
 
@@ -202,7 +210,7 @@ class LLMExtractor:
             A dictionary with MDS item IDs as keys and their extracted values.
             Includes a ``"confidence"`` key with per-item confidence scores.
         """
-        prepared_text = self._prepare_note_text(note_text)
+        prepared_text = self._prepare_note_text(note_text, note_metadata=note_metadata)
         items = self._get_items_to_extract()
         return self._extract_from_prepared_text(prepared_text, items)
 
@@ -210,6 +218,7 @@ class LLMExtractor:
         self,
         note_text: str,
         modes: Optional[Sequence[str]] = None,
+        note_metadata: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Dict[str, Any]]:
         """Run extraction with multiple preprocessing modes and return all results."""
         items = self._get_items_to_extract()
@@ -220,7 +229,11 @@ class LLMExtractor:
         results: Dict[str, Dict[str, Any]] = {}
 
         for mode in selected_modes:
-            prepared_text = self._prepare_note_text(note_text, preprocessing_mode=mode)
+            prepared_text = self._prepare_note_text(
+                note_text,
+                preprocessing_mode=mode,
+                note_metadata=note_metadata,
+            )
             extraction = self._extract_from_prepared_text(prepared_text, items)
             results[mode] = {
                 "prepared_text": prepared_text,
@@ -287,6 +300,7 @@ class LLMExtractor:
         self,
         note_text: str,
         preprocessing_mode: str = "heuristic",
+        note_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Preprocess note text before extraction to improve signal quality."""
         if not self.preprocess_input:
@@ -294,9 +308,17 @@ class LLMExtractor:
         normalized_mode = self._normalize_preprocessing_mode(preprocessing_mode)
         sections = self.sections or ["I", "N", "O"]
         if normalized_mode == "heuristic":
-            return build_extraction_context(note_text, sections=sections)
+            return build_extraction_context(
+                note_text,
+                sections=sections,
+                note_metadata=note_metadata,
+            )
         if normalized_mode == "llm_evidence":
-            return self._build_llm_evidence_context(note_text, sections=sections)
+            return self._build_llm_evidence_context(
+                note_text,
+                sections=sections,
+                note_metadata=note_metadata,
+            )
         raise ValueError(f"Unsupported preprocessing mode: {preprocessing_mode!r}")
 
     @staticmethod
@@ -313,6 +335,7 @@ class LLMExtractor:
         self,
         note_text: str,
         sections: Sequence[str],
+        note_metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Use the LLM to condense the note into compact I/N/O evidence snippets."""
         cleaned = clean_discharge_text(note_text)
@@ -341,7 +364,18 @@ class LLMExtractor:
                 parts.append(f"[{section_id}]\n{lines}")
 
         if not found_evidence:
-            return build_extraction_context(note_text, sections=sections)
+            return build_extraction_context(
+                note_text,
+                sections=sections,
+                note_metadata=note_metadata,
+            )
+
+        structured_block = format_structured_data_summary(
+            note_metadata=note_metadata,
+            sections=sections,
+        )
+        if structured_block:
+            parts.append("=== STRUCTURED EVIDENCE ===\n" + structured_block)
 
         parts.append("=== SUPPORTING NOTE EXCERPT ===\n" + cleaned[:1800])
         return "\n\n".join(parts)

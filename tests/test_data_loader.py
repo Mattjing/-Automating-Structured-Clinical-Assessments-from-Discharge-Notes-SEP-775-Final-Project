@@ -160,6 +160,51 @@ class TestMIMICDischargeLoaderFromFile:
         assert notes[0].note_id == "x1"
         assert "Some note text" in notes[0].text
 
+    def test_load_with_structured_sources_attaches_rows(self, tmp_path):
+        notes_df = pd.DataFrame(
+            {
+                "note_id": ["n1", "n2"],
+                "subject_id": ["p1", "p2"],
+                "hadm_id": ["h1", "h2"],
+                "text": ["note one", "note two"],
+            }
+        )
+        notes_path = str(tmp_path / "notes.csv")
+        notes_df.to_csv(notes_path, index=False)
+
+        diagnoses_df = pd.DataFrame(
+            {
+                "hadm_id": ["h1", "h1", "hx"],
+                "icd_code": ["I10", "E11", "Z99"],
+                "description": ["Hypertension", "Diabetes", "Other"],
+            }
+        )
+        diagnoses_path = str(tmp_path / "diagnoses.csv")
+        diagnoses_df.to_csv(diagnoses_path, index=False)
+
+        loader = MIMICDischargeLoader(
+            source=notes_path,
+            structured_sources={"diagnoses": diagnoses_path},
+        )
+        loaded_notes = loader.load()
+
+        first_note = loaded_notes[0]
+        second_note = loaded_notes[1]
+
+        assert "structured_data" in first_note.metadata
+        assert "diagnoses" in first_note.metadata["structured_data"]
+        assert len(first_note.metadata["structured_data"]["diagnoses"]) == 2
+        assert first_note.metadata["structured_data"]["diagnoses"][0]["icd_code"] == "I10"
+        assert "structured_data" not in second_note.metadata
+
+    def test_missing_structured_source_raises(self, sample_csv):
+        loader = MIMICDischargeLoader(
+            source=sample_csv,
+            structured_sources={"diagnoses": "missing.csv"},
+        )
+        with pytest.raises(FileNotFoundError, match="Structured data source"):
+            loader.load()
+
 
 # ---------------------------------------------------------------------------
 # MIMICDischargeLoader — pyhealth source

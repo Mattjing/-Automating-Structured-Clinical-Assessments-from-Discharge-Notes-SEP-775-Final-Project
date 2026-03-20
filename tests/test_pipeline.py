@@ -185,7 +185,7 @@ class TestExtractionPipelineRun:
 
         call_count = 0
 
-        def mock_extract(text):
+        def mock_extract(text, *args, **kwargs):
             nonlocal call_count
             call_count += 1
             if call_count == 1:
@@ -223,6 +223,17 @@ class TestExtractionPipelineRun:
                 preprocess_input=False,
             )
         assert pipeline.preprocess_input is False
+
+    def test_structured_sources_are_stored_on_pipeline(self, sample_excel, tmp_path):
+        with patch("src.extractor._build_openai_client", return_value=MagicMock()):
+            pipeline = ExtractionPipeline(
+                source=sample_excel,
+                openai_api_key="sk-test",
+                output_dir=str(tmp_path / "output"),
+                output_format="json",
+                structured_sources={"diagnoses": "data/diagnoses.csv"},
+            )
+        assert "diagnoses" in pipeline.structured_sources
 
     def test_compare_preprocessing_methods_writes_comparison_file(self, sample_excel, tmp_path):
         pipeline = _make_pipeline(
