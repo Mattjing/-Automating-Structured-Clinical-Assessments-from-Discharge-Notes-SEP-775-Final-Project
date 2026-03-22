@@ -163,6 +163,9 @@ class ExtractionPipeline:
     medbert_prefer_gpu : bool
         Whether to run MedBERT on CUDA when available.
         Only used when ``extractor_type="medbert"``.
+    medbert_gpu_device : int
+        Preferred CUDA device index for MedBERT when GPU is enabled.
+        Only used when ``extractor_type="medbert"``.
     """
 
     def __init__(
@@ -195,6 +198,7 @@ class ExtractionPipeline:
         extractor_type: str = "llm",
         medbert_model_name: str = "d4data/biomedical-ner-all",
         medbert_prefer_gpu: bool = True,
+        medbert_gpu_device: int = 0,
     ) -> None:
         self.source = source
         self.mimic_root = mimic_root
@@ -224,6 +228,7 @@ class ExtractionPipeline:
         self.extractor_type = extractor_type.lower()
         self.medbert_model_name = medbert_model_name
         self.medbert_prefer_gpu = medbert_prefer_gpu
+        self.medbert_gpu_device = int(medbert_gpu_device)
         self._comparison_rows: List[Dict[str, Any]] = []
 
         # Shared schema instance
@@ -274,6 +279,7 @@ class ExtractionPipeline:
                 sections=self.sections,
                 preprocess_input=self.preprocess_input,
                 prefer_gpu=self.medbert_prefer_gpu,
+                gpu_device=self.medbert_gpu_device,
             )
             mapper: Any = MedBERTMapper(schema=self._schema, strict=self.strict_validation)
         else:
@@ -764,6 +770,12 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="Force CPU for MedBERT even if CUDA is available",
     )
     parser.add_argument(
+        "--medbert-gpu-device",
+        type=int,
+        default=None,
+        help="CUDA device index for MedBERT when GPU is enabled (default: 0)",
+    )
+    parser.add_argument(
         "--mode",
         choices=sorted(_PROCESSING_MODE_CONFIGS.keys()),
         default=None,
@@ -871,6 +883,28 @@ def _resolve_medbert_gpu_preference(args: argparse.Namespace) -> bool:
     return True
 
 
+def _resolve_medbert_gpu_device(args: argparse.Namespace) -> int:
+    """Resolve MedBERT CUDA device index using CLI first, then config fallback."""
+    if args.medbert_gpu_device is not None:
+        requested = args.medbert_gpu_device
+    else:
+        requested = 0
+        config = _load_config_defaults(args.config)
+        extraction_raw = config.get("extraction", {})
+        if isinstance(extraction_raw, dict):
+            extraction_cfg = cast(Dict[str, Any], extraction_raw)
+            configured = extraction_cfg.get("medbert_gpu_device", 0)
+            try:
+                requested = int(configured)
+            except Exception:
+                requested = 0
+
+    if requested < 0:
+        logger.warning("Invalid MedBERT GPU device index %d; defaulting to 0.", requested)
+        return 0
+    return int(requested)
+
+
 def _main() -> int:
     try:
         from dotenv import load_dotenv
@@ -887,6 +921,7 @@ def _main() -> int:
     args = _build_arg_parser().parse_args()
     args = _resolve_processing_mode(args)
     medbert_prefer_gpu = _resolve_medbert_gpu_preference(args)
+    medbert_gpu_device = _resolve_medbert_gpu_device(args)
 
     pipeline = ExtractionPipeline(
         source=args.source,
@@ -902,6 +937,7 @@ def _main() -> int:
         extractor_type=args.extractor_type,
         medbert_model_name=args.medbert_model,
         medbert_prefer_gpu=medbert_prefer_gpu,
+        medbert_gpu_device=medbert_gpu_device,
     )
     assessments = pipeline.run()
     logger.info("Pipeline complete. Generated %d assessments.", len(assessments))

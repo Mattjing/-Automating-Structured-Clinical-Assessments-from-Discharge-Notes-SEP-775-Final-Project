@@ -1,7 +1,7 @@
 """Tests for medbert_extractor.py."""
 
 from src.mds_schema import MDSSchema
-from src.medbert_extractor import MedBERTExtractor
+from src.medbert_extractor import MedBERTExtractor, _resolve_transformers_device
 
 
 class DummyNERPipeline:
@@ -44,3 +44,41 @@ def test_medbert_extract_maps_i_n_o_fields():
     assert result.get("I2900") is True
     assert result.get("N0415E") == ["1"]
     assert result.get("O0110C1") is True
+
+
+class _FakeCUDA:
+    def __init__(self, available: bool, count: int):
+        self._available = available
+        self._count = count
+
+    def is_available(self) -> bool:
+        return self._available
+
+    def device_count(self) -> int:
+        return self._count
+
+    def get_device_name(self, index: int) -> str:
+        return f"Fake GPU {index}"
+
+
+class _FakeTorch:
+    def __init__(self, cuda: _FakeCUDA):
+        self.cuda = cuda
+
+
+def test_resolve_transformers_device_uses_requested_cuda_index():
+    fake_torch = _FakeTorch(cuda=_FakeCUDA(available=True, count=2))
+    device = _resolve_transformers_device(True, 1, torch_module=fake_torch)
+    assert device == 1
+
+
+def test_resolve_transformers_device_falls_back_to_zero_for_invalid_index():
+    fake_torch = _FakeTorch(cuda=_FakeCUDA(available=True, count=1))
+    device = _resolve_transformers_device(True, 9, torch_module=fake_torch)
+    assert device == 0
+
+
+def test_resolve_transformers_device_returns_cpu_when_gpu_disabled():
+    fake_torch = _FakeTorch(cuda=_FakeCUDA(available=True, count=1))
+    device = _resolve_transformers_device(False, 0, torch_module=fake_torch)
+    assert device == -1

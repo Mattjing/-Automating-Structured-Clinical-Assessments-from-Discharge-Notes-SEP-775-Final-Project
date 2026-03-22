@@ -38,6 +38,60 @@ def _empty_ner_pipeline(_text: str) -> List[Dict[str, Any]]:
     return []
 
 
+def _resolve_transformers_device(
+    prefer_gpu: bool,
+    gpu_device: int,
+    torch_module: Optional[Any] = None,
+) -> int:
+    """Return transformers pipeline device id (-1 for CPU, >=0 for CUDA index)."""
+    if not prefer_gpu:
+        logger.info("MedBERT using CPU (GPU preference disabled).")
+        return -1
+
+    try:
+        torch = torch_module
+        if torch is None:
+            import torch as imported_torch  # type: ignore[import]
+
+            torch = imported_torch
+    except Exception as exc:
+        logger.info("MedBERT using CPU (torch import failed: %s).", exc)
+        return -1
+
+    try:
+        if not torch.cuda.is_available():
+            logger.info("MedBERT using CPU (CUDA not available).")
+            return -1
+
+        device_count = int(torch.cuda.device_count())
+        if device_count <= 0:
+            logger.info("MedBERT using CPU (no CUDA devices detected).")
+            return -1
+
+        selected = gpu_device
+        if selected < 0 or selected >= device_count:
+            logger.warning(
+                "Requested CUDA device %d is unavailable (device_count=%d). Falling back to 0.",
+                selected,
+                device_count,
+            )
+            selected = 0
+
+        try:
+            device_name = str(torch.cuda.get_device_name(selected))
+        except Exception:
+            device_name = "unknown"
+        logger.info(
+            "MedBERT using GPU (CUDA device %d: %s).",
+            selected,
+            device_name,
+        )
+        return selected
+    except Exception as exc:
+        logger.info("MedBERT using CPU (CUDA check failed: %s).", exc)
+        return -1
+
+
 _GENERIC_SCHEMA_TOKENS: set[str] = {
     "active",
     "additional",
@@ -136,6 +190,8 @@ class MedBERTExtractor:
         Whether to run focused preprocessing before NER.
     prefer_gpu : bool
         Whether to place the NER model on CUDA when available.
+    gpu_device : int
+        Preferred CUDA device index (used when ``prefer_gpu=True``).
     ner_pipeline : Any, optional
         Injected transformers pipeline (useful for testing/mocking).
     """
@@ -147,6 +203,7 @@ class MedBERTExtractor:
         sections: Optional[List[str]] = None,
         preprocess_input: bool = True,
         prefer_gpu: bool = True,
+        gpu_device: int = 0,
         ner_pipeline: Optional[Any] = None,
         auto_pattern_path: Optional[str] = None,
     ) -> None:
@@ -155,6 +212,7 @@ class MedBERTExtractor:
         self.sections = [section.upper() for section in sections] if sections else ["I", "N", "O"]
         self.preprocess_input = preprocess_input
         self.prefer_gpu = prefer_gpu
+        self.gpu_device = int(gpu_device)
 
         # Build baseline rules from schema labels with item-type scoping.
         self.diagnosis_patterns: Dict[str, Tuple[str, ...]] = _schema_label_patterns(
@@ -231,18 +289,10 @@ class MedBERTExtractor:
             tokenizer = AutoTokenizer.from_pretrained(self.model_name)
             model = AutoModelForTokenClassification.from_pretrained(self.model_name)
 
-            device = -1
-            if self.prefer_gpu:
-                try:
-                    import torch  # type: ignore[import]
-
-                    if torch.cuda.is_available():
-                        device = 0
-                        logger.info("MedBERT using GPU (CUDA device 0).")
-                    else:
-                        logger.info("MedBERT using CPU (CUDA not available).")
-                except Exception as exc:
-                    logger.info("MedBERT using CPU (torch/cuda check failed: %s).", exc)
+            device = _resolve_transformers_device(
+                prefer_gpu=self.prefer_gpu,
+                gpu_device=self.gpu_device,
+            )
 
             return pipeline(
                 "token-classification",

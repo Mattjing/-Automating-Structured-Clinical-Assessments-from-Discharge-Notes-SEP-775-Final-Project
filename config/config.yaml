@@ -29,6 +29,8 @@ extraction:
   batch_size: 10
   # Prefer running MedBERT on CUDA when available
   medbert_prefer_gpu: true
+  # CUDA device index to use when GPU is enabled
+  medbert_gpu_device: 0
   # Whether to include extraction confidence scores
   include_confidence: true
 

@@ -17,10 +17,11 @@
 4. [Extraction and Mapping](#extraction-and-mapping)
 5. [Supported MDS 3.0 Sections](#supported-mds-30-sections)
 6. [Setup](#setup)
-7. [Usage](#usage)
-8. [Configuration](#configuration)
-9. [Running Tests](#running-tests)
-10. [Data](#data)
+7. [GPU Support](#gpu-support)
+8. [Usage](#usage)
+9. [Configuration](#configuration)
+10. [Running Tests](#running-tests)
+11. [Data](#data)
 
 ---
 
@@ -563,6 +564,134 @@ export OPENAI_API_KEY="sk-..."
 
 ---
 
+## GPU Support
+
+GPU acceleration is used by the **MedBERT extractor** to speed up biomedical NER inference. The pipeline automatically detects CUDA and falls back to CPU if no GPU is found — no code changes are needed.
+
+### Checking GPU readiness
+
+Run the bundled diagnostic script before starting any training or inference workload:
+
+```bash
+python scripts/check_gpu.py
+```
+
+#### GPU available — expected output
+
+```
+torch_version: 2.x.x+cu118
+torch_cuda_build: 11.8
+cuda_available: True
+cuda_device_count: 1
+cuda_device_0: NVIDIA GeForce RTX 3080 (compute_capability=8.6)
+gpu_tensor_op: PASS
+```
+
+Key indicators of a healthy GPU environment:
+
+| Field | Expected value |
+|---|---|
+| `cuda_available` | `True` |
+| `cuda_device_count` | ≥ 1 |
+| `cuda_device_0` | Your GPU name and compute capability |
+| `gpu_tensor_op` | `PASS` — a real 1024×1024 matrix multiply executed on CUDA |
+
+#### GPU not available — expected output
+
+```
+torch_version: 2.x.x+cpu
+torch_cuda_build: None
+cuda_available: False
+No CUDA runtime/device detected. Workloads will run on CPU.
+```
+
+The script exits with:
+- `0` — GPU detected and tensor op passed
+- `1` — `torch` could not be imported
+- `2` — CUDA not available (CPU-only install or no compatible GPU)
+- `3` — CUDA available but tensor operation failed
+
+If CUDA is not detected, install a CUDA-enabled PyTorch build matching your driver version from [pytorch.org](https://pytorch.org/get-started/locally/).
+
+---
+
+### MedBERT device selection at runtime
+
+When `MedBERTExtractor` (or the pipeline) initialises the NER model, it logs which device it selected. You will see one of the following messages:
+
+| Scenario | Log message |
+|---|---|
+| GPU found and selected | `MedBERT using GPU (CUDA device 0: NVIDIA GeForce RTX 3080).` |
+| Requested device index out of range — fell back to device 0 | `Requested CUDA device 2 is unavailable (device_count=1). Falling back to 0.` then `MedBERT using GPU (CUDA device 0: …).` |
+| GPU preference explicitly disabled (`--medbert-force-cpu`) | `MedBERT using CPU (GPU preference disabled).` |
+| CUDA not available at runtime | `MedBERT using CPU (CUDA not available).` |
+| No CUDA devices detected | `MedBERT using CPU (no CUDA devices detected).` |
+| `torch` import failed | `MedBERT using CPU (torch import failed: …).` |
+| CUDA check raised an exception | `MedBERT using CPU (CUDA check failed: …).` |
+
+Logs are emitted at `INFO` level. To see them, run with the default logging configuration or set `--log-level INFO`.
+
+---
+
+### Controlling GPU usage
+
+**Python API**
+
+```python
+from src.medbert_extractor import MedBERTExtractor
+from src.mds_schema import MDSSchema
+
+schema = MDSSchema(section_ids=["I", "N", "O"])
+
+# Use GPU (default) — picks CUDA device 0 when available
+extractor = MedBERTExtractor(schema=schema, prefer_gpu=True, gpu_device=0)
+
+# Explicit GPU device (e.g. second GPU in a multi-GPU machine)
+extractor = MedBERTExtractor(schema=schema, prefer_gpu=True, gpu_device=1)
+
+# Force CPU regardless of what hardware is present
+extractor = MedBERTExtractor(schema=schema, prefer_gpu=False)
+```
+
+Via `ExtractionPipeline`:
+
+```python
+from src.pipeline import ExtractionPipeline
+
+pipeline = ExtractionPipeline(
+    source="data/discharge.csv/discharge.csv",
+    sections=["I", "N", "O"],
+    medbert_prefer_gpu=True,   # default: True
+    medbert_gpu_device=0,      # default: 0
+)
+assessments = pipeline.run()
+```
+
+**CLI flags**
+
+```bash
+# Explicitly enable GPU (default behaviour)
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-prefer-gpu
+
+# Force CPU even if a GPU is present
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-force-cpu
+
+# Target a specific CUDA device index
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-gpu-device 1
+```
+
+**`config/config.yaml`**
+
+```yaml
+extraction:
+  medbert_prefer_gpu: true   # set to false to always use CPU
+  medbert_gpu_device: 0      # CUDA device index
+```
+
+CLI flags take priority over config values when both are provided.
+
+---
+
 ## Usage
 
 ### Quick start — from a CSV file
@@ -702,6 +831,12 @@ python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full-com
 # Full dataset using MedBERT (no API key needed)
 python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full
 
+# Force MedBERT onto CUDA device 1
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-gpu-device 1
+
+# Force CPU (debug/fallback)
+python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-force-cpu
+
 # Custom sample size
 python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample --sample-size 20
 ```
@@ -724,6 +859,10 @@ data:
 
 preprocess:
   enabled: true
+
+extraction:
+    medbert_prefer_gpu: true
+    medbert_gpu_device: 0
 
 output:
   output_dir: "output"
