@@ -8,7 +8,7 @@ import tempfile
 import pandas as pd
 import pytest
 
-from src.data_loader import DischargeNote, MIMICDischargeLoader
+from src.data_preprocessor.data_loader import DischargeNote, MIMICDischargeLoader
 
 
 # ---------------------------------------------------------------------------

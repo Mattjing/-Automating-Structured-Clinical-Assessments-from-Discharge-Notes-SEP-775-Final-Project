@@ -35,11 +35,11 @@ if __name__ == "__main__" and (__package__ is None or __package__ == ""):
     if repo_root not in sys.path:
         sys.path.insert(0, repo_root)
 
-from src.data_loader import MIMICDischargeLoader
-from src.extractor import LLMExtractor
-from src.mapper import MDSMapper
-from src.medbert_extractor import MedBERTExtractor
-from src.medbert_mapper import MedBERTMapper
+from src.data_preprocessor.data_loader import MIMICDischargeLoader
+from src.extractor.extractor import LLMExtractor
+from src.mapper.mapper import MDSMapper
+from src.extractor.medbert_extractor import MedBERTExtractor
+from src.mapper.medbert_mapper import MedBERTMapper
 from src.mds_schema import MDSAssessment, MDSSchema
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,6 @@
 """Tests for preprocessor.py"""
 
-from src.preprocessor import (
+from src.data_preprocessor.preprocessor import (
     build_extraction_context,
     build_patient_knowledge_graph_chart,
     clean_discharge_text,

@@ -1,7 +1,7 @@
 """Tests for medbert_extractor.py."""
 
 from src.mds_schema import MDSSchema
-from src.medbert_extractor import MedBERTExtractor, _resolve_transformers_device
+from src.extractor.medbert_extractor import MedBERTExtractor, _resolve_transformers_device
 
 
 class DummyNERPipeline:

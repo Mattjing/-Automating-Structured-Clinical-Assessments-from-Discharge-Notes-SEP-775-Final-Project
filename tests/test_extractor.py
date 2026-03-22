@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.extractor import LLMExtractor, _build_fields_spec, _coerce_value
+from src.extractor.extractor import LLMExtractor, _build_fields_spec, _coerce_value
 from src.mds_schema import MDSItem, MDSItemType, MDSResponseOption, MDSSchema
 
 

@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, cast
 
 from src.mds_schema import MDSItem, MDSItemType, MDSSchema
-from src.preprocessor import build_extraction_context
+from src.data_preprocessor.preprocessor import build_extraction_context
 
 logger = logging.getLogger(__name__)
 

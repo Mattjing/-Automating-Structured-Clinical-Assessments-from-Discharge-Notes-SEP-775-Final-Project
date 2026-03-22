@@ -28,7 +28,7 @@ from tenacity import (
 )
 
 from src.mds_schema import MDSItem, MDSItemType, MDSSchema
-from src.preprocessor import (
+from src.data_preprocessor.preprocessor import (
     build_extraction_context,
     clean_discharge_text,
     format_structured_data_summary,

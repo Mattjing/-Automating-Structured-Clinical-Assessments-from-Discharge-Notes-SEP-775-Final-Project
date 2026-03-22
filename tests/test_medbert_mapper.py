@@ -1,7 +1,7 @@
 """Tests for medbert_mapper.py."""
 
 from src.mds_schema import MDSSchema
-from src.medbert_mapper import MedBERTMapper
+from src.mapper.medbert_mapper import MedBERTMapper
 
 
 def test_medbert_mapper_attaches_metadata_and_maps_fields():

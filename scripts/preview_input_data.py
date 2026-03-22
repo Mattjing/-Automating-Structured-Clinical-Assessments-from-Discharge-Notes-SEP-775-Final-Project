@@ -20,7 +20,7 @@ if __name__ == "__main__" and (__package__ is None or __package__ == ""):
     if repo_root not in sys.path:
         sys.path.insert(0, repo_root)
 
-from src.data_loader import MIMICDischargeLoader
+from src.data_preprocessor.data_loader import MIMICDischargeLoader
 
 
 _FIELD_DESCRIPTIONS = {

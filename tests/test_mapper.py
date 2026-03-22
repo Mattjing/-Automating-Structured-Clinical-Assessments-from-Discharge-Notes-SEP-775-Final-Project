@@ -4,7 +4,7 @@ Tests for mapper.py
 
 import pytest
 
-from src.mapper import MDSMapper
+from src.mapper.mapper import MDSMapper
 from src.mds_schema import MDSAssessment, MDSSchema
 
 
