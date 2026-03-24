@@ -26,33 +26,35 @@
 The system takes hospital discharge notes (unstructured free text) alongside structured clinical tables (diagnoses, medications, procedures) and automatically fills the MDS 3.0 form fields for **Section I (Active Disease Diagnoses)**, **Section N (Medications)**, and **Section O (Special Treatments, Procedures, Programs)**.
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                     INPUT DATA                       │
-│  Discharge notes (free text) + structured tables     │
-│  diagnoses.csv  /  prescriptions.csv  /  procedures  │
-└───────────────────────────┬─────────────────────────┘
-                            │
-                            ▼
-              ┌─────────────────────────┐
-              │    Data Preprocessor    │
-              │  data_loader.py         │
-              │  preprocessor.py        │
-              │  rag_retriever.py       │
-              │  seq2seq_preprocessor.py│
-              └────────────┬────────────┘
-                           │  Preprocessed Context
-         ┌─────────────────┼─────────────────┐
-         ▼                 ▼                 ▼
-   LLMExtractor    Seq2SeqExtractor    (BioBERT RAG
-   (GPT / OpenAI)  (BioBART / T5)      + LLMExtractor)
-         │                 │
-         └────────┬────────┘
-                  ▼
-         MDSMapper / Seq2SeqMapper
-                  │
-                  ▼
-           MDSAssessment
-       (JSON / CSV / Excel)
+┌──────────────────────────────────────────────────────────────┐
+│ INPUT DATA: Discharge notes (free text) + structured tables   │
+└───────────────────────────────┬──────────────────────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                 │
+              ▼                 ▼                 ▼
+     ┌────────────────┐  ┌────────────────┐  ┌─────────────────────┐
+     │ RAG BioBERT    │  │ Preprocessor   │  │ Seq2Seq preprocessor│
+     │ Retriever      │  │(knowledge graph)│ │ (seq2seq input)     │
+     └───────┬────────┘  └───────┬────────┘  └──────────┬──────────┘
+             │                   │                      │
+             ▼                   ▼                      ▼
+          ┌──────────────────────────┐       ┌─────────────────────┐
+          │      LLM Extractor       │       │ Seq2Seq Extractor   │
+          │      (GPT / OpenAI)      │       │ (BioBART / T5)      │
+          └─────────────┬────────────┘       └──────────┬──────────┘
+                        │                               │          
+                        ▼                               ▼                      
+                  ┌───────────┐                 ┌────────────────┐
+                  │ MDS Mapper│                 │ Seq2Seq Mapper │
+                  └─────┬─────┘                 └───────┬────────┘
+                        │                               │                      
+                        └────────────────┬──────────────┘
+                                         ▼                 
+                         ┌────────────────────────────────┐
+                         │         MDS Assessment         │
+                         │      (JSON / CSV / Excel)      │
+                         └────────────────────────────────┘
 ```
 
 ---
