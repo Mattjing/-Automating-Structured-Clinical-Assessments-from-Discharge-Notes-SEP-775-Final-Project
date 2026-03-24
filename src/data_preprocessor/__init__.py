@@ -10,6 +10,8 @@ from src.data_preprocessor.preprocessor import (
     extract_priority_snippets,
     format_structured_data_summary,
 )
+from src.data_preprocessor.rag_retriever import BioBERTRetriever
+from src.data_preprocessor.seq2seq_preprocessor import build_seq2seq_input
 
 __all__ = [
     "DischargeNote",
@@ -21,4 +23,6 @@ __all__ = [
     "expand_abbreviations",
     "extract_priority_snippets",
     "format_structured_data_summary",
+    "BioBERTRetriever",
+    "build_seq2seq_input",
 ]

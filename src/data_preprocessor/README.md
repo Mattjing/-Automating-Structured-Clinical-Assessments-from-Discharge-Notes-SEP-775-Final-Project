@@ -105,7 +105,7 @@ Raw discharge text + structured tables
  Step 6: Detect conflicts           Jaccard overlap between structured ↔ unstructured nodes
         │
         ▼
-Patient Knowledge Graph string  →  passed to LLMExtractor or MedBERTExtractor
+Patient Knowledge Graph string  →  passed to LLMExtractor or Seq2SeqExtractor
 ```
 
 ---
@@ -238,7 +238,7 @@ context = build_extraction_context(
     note_metadata=note.metadata,
 )
 print(context)
-# → Full context block passed verbatim to LLMExtractor or MedBERTExtractor
+# → Full context block passed verbatim to LLMExtractor or Seq2SeqExtractor
 ```
 
 ---

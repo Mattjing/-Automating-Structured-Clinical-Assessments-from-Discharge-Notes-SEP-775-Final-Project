@@ -37,20 +37,22 @@ The system takes hospital discharge notes (unstructured free text) alongside str
               │    Data Preprocessor    │
               │  data_loader.py         │
               │  preprocessor.py        │
+              │  rag_retriever.py       │
+              │  seq2seq_preprocessor.py│
               └────────────┬────────────┘
-                           │  Patient Knowledge Graph
-                  ┌────────┴────────┐
-                  ▼                 ▼
-           LLMExtractor      MedBERTExtractor
-           (GPT / OpenAI)    (biomedical NER)
-                  │                 │
-                  └────────┬────────┘
-                           ▼
-                  MDSMapper / MedBERTMapper
-                           │
-                           ▼
-                    MDSAssessment
-                (JSON / CSV / Excel)
+                           │  Preprocessed Context
+         ┌─────────────────┼─────────────────┐
+         ▼                 ▼                 ▼
+   LLMExtractor    Seq2SeqExtractor    (BioBERT RAG
+   (GPT / OpenAI)  (BioBART / T5)      + LLMExtractor)
+         │                 │
+         └────────┬────────┘
+                  ▼
+         MDSMapper / Seq2SeqMapper
+                  │
+                  ▼
+           MDSAssessment
+       (JSON / CSV / Excel)
 ```
 
 ---
@@ -60,35 +62,35 @@ The system takes hospital discharge notes (unstructured free text) alongside str
 ```
 .
 ├── config/
-│   ├── config.yaml                        # Runtime configuration
-│   └── medbert_patterns.auto.json         # Auto-generated MedBERT regex seed patterns
+│   └── config.yaml                        # Runtime configuration
 ├── scripts/
 │   ├── check_gpu.py                       # GPU readiness diagnostic
 │   ├── extract_mds_sections_from_pdf.py   # Parse MDS 3.0 PDF → item text + patterns
-│   └── preview_input_data.py              # Print sample input records
+│   ├── preview_input_data.py              # Print sample input records
+│   └── train_seq2seq.py                   # Fine-tune BioBART / ClinicalT5 on labeled pairs
 ├── src/
 │   ├── __init__.py
 │   ├── mds_schema.py                      # MDS 3.0 form field definitions (shared)
 │   ├── pipeline.py                        # End-to-end orchestration
 │   ├── data_preprocessor/                 # ← Load notes + preprocess text
 │   │   ├── data_loader.py
-│   │   ├── preprocessor.py
+│   │   ├── preprocessor.py                # Full preprocessor (LLM path)
+│   │   ├── rag_retriever.py               # BioBERT semantic retriever (Option 2)
+│   │   ├── seq2seq_preprocessor.py        # Simplified preprocessor (seq2seq path)
 │   │   └── README.md                      # Detailed docs for this module
 │   ├── extractor/                         # ← Extract MDS fields from context
-│   │   ├── extractor.py
-│   │   ├── medbert_extractor.py
+│   │   ├── extractor.py                   # LLM extractor (OpenAI GPT)
+│   │   ├── seq2seq_extractor.py           # Encoder-decoder extractor (BioBART / T5)
 │   │   └── README.md                      # Detailed docs for this module
 │   └── mapper/                            # ← Validate + map results to MDSAssessment
-│       ├── mapper.py
-│       ├── medbert_mapper.py
+│       ├── mapper.py                      # Base mapper (LLM output)
+│       ├── seq2seq_mapper.py              # Extended mapper (seq2seq output)
 │       └── README.md                      # Detailed docs for this module
 └── tests/
     ├── test_data_loader.py
     ├── test_preprocessor.py
     ├── test_extractor.py
-    ├── test_medbert_extractor.py
     ├── test_mapper.py
-    ├── test_medbert_mapper.py
     └── test_pipeline.py
 ```
 
@@ -115,14 +117,14 @@ Loads MIMIC IV discharge notes and transforms raw clinical text into a structure
 
 ### Stage 2 — Extractor → [`src/extractor/`](src/extractor/README.md)
 
-Two interchangeable extractors consume the Patient Knowledge Graph and return raw structured results:
+Two interchangeable extractors consume the preprocessed context and return raw structured results:
 
 | Extractor | Backend | API key required | GPU |
 |-----------|---------|-----------------|-----|
 | `LLMExtractor` | OpenAI Chat Completions | Yes | No |
-| `MedBERTExtractor` | Hugging Face biomedical NER | No | Optional (CUDA) |
+| `Seq2SeqExtractor` | BioBART / ClinicalT5 (encoder-decoder) | No | Optional (CUDA) |
 
-> See [src/extractor/README.md](src/extractor/README.md) for constructor parameters, GPU device selection, preprocessing modes, and retry behaviour.
+> See [src/extractor/README.md](src/extractor/README.md) for constructor parameters, GPU device selection, preprocessing modes, and fine-tuning instructions.
 
 ---
 
@@ -133,7 +135,7 @@ Validates extracted values against the MDS schema and packages them into `MDSAss
 | Mapper | For use with |
 |--------|-------------|
 | `MDSMapper` | `LLMExtractor` output |
-| `MedBERTMapper` | `MedBERTExtractor` output — also stores NER evidence traces |
+| `Seq2SeqMapper` | `Seq2SeqExtractor` output — also stores raw decoder output in metadata |
 
 > See [src/mapper/README.md](src/mapper/README.md) for validation rules, output format, and serialisation options.
 
@@ -179,7 +181,7 @@ export OPENAI_API_KEY="sk-..."
 
 ## GPU Support
 
-GPU acceleration is used by `MedBERTExtractor` for faster NER inference. The pipeline automatically detects CUDA and falls back to CPU — no code changes needed.
+GPU acceleration is used by `Seq2SeqExtractor` (BioBART / ClinicalT5) and `BioBERTRetriever` for faster model inference and fine-tuning. The pipeline automatically detects CUDA and falls back to CPU — no code changes needed.
 
 ### Check GPU readiness
 
@@ -204,26 +206,6 @@ No CUDA runtime/device detected. Workloads will run on CPU.
 
 Script exit codes: `0` = pass, `1` = torch import error, `2` = no CUDA, `3` = tensor op failed.
 
-### Control GPU usage
-
-```bash
-# Default — uses GPU when available
-python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full
-
-# Force CPU
-python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-force-cpu
-
-# Target specific CUDA device
-python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full --medbert-gpu-device 1
-```
-
-Or via `config/config.yaml`:
-```yaml
-extraction:
-  medbert_prefer_gpu: true
-  medbert_gpu_device: 0
-```
-
 ---
 
 ## Quick Start
@@ -244,23 +226,47 @@ pipeline = ExtractionPipeline(
 assessments = pipeline.run()
 ```
 
-### MedBERT extractor (no API key required)
+### Seq2Seq extractor (no API key required)
 
 ```python
 from src.data_preprocessor.data_loader import MIMICDischargeLoader
 from src.mds_schema import MDSSchema
-from src.extractor.medbert_extractor import MedBERTExtractor
-from src.mapper.medbert_mapper import MedBERTMapper
+from src.extractor.seq2seq_extractor import Seq2SeqExtractor
+from src.mapper.seq2seq_mapper import Seq2SeqMapper
 
 loader = MIMICDischargeLoader(source="data/discharge.csv/discharge.csv")
 notes = loader.load()
 
 schema = MDSSchema(section_ids=["I", "N", "O"])
-extractor = MedBERTExtractor(schema=schema, model_name="d4data/biomedical-ner-all")
-mapper = MedBERTMapper(schema=schema)
+extractor = Seq2SeqExtractor(schema=schema, model_name="GanjinZero/biobart-v2-base")
+mapper = Seq2SeqMapper(schema=schema)
 
 note = notes[0]
 raw = extractor.extract(note.text, note_metadata=note.metadata)
+assessment = mapper.map(note.note_id, note.subject_id, note.hadm_id, raw)
+print(assessment.to_dict())
+```
+
+### BioBERT RAG + LLM (semantic retrieval, no fine-tuning required)
+
+```python
+from src.data_preprocessor.data_loader import MIMICDischargeLoader
+from src.data_preprocessor.rag_retriever import BioBERTRetriever
+from src.mds_schema import MDSSchema
+from src.extractor.extractor import LLMExtractor
+from src.mapper.mapper import MDSMapper
+
+loader = MIMICDischargeLoader(source="data/discharge.csv/discharge.csv")
+notes = loader.load()
+
+schema    = MDSSchema(section_ids=["I", "N", "O"])
+retriever = BioBERTRetriever(sections=["I", "N", "O"])
+extractor = LLMExtractor(schema=schema, api_key="sk-...", preprocess_input=False)
+mapper    = MDSMapper(schema=schema)
+
+note    = notes[0]
+context = retriever.build_rag_context(note.text, note.metadata)
+raw     = extractor.extract(context)
 assessment = mapper.map(note.note_id, note.subject_id, note.hadm_id, raw)
 print(assessment.to_dict())
 ```
@@ -294,15 +300,11 @@ Interactive mode prompts for a processing mode:
 
 ```
 Select processing mode:
-  --- LLM (OpenAI GPT) ---
   1. sample          - run the initial sample only
   2. sample-compare  - run the sample and compare preprocessing methods
   3. full            - process the entire dataset
   4. full-compare    - process the entire dataset and compare preprocessing methods
-  --- MedBERT (biomedical NER, no API key required) ---
-  5. medbert-sample  - run the initial sample with MedBERT NER
-  6. medbert-full    - process the entire dataset with MedBERT NER
-Enter mode [1-6] (default 1):
+Enter mode [1-4] (default 1):
 ```
 
 **Scripted / non-interactive:**
@@ -313,9 +315,6 @@ python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample
 
 # Full dataset with preprocessing comparison
 python src/pipeline.py --source data/discharge.csv/discharge.csv --mode full-compare
-
-# Full dataset with MedBERT
-python src/pipeline.py --source data/discharge.csv/discharge.csv --mode medbert-full
 
 # Custom sample size
 python src/pipeline.py --source data/discharge.csv/discharge.csv --mode sample --sample-size 20
@@ -339,10 +338,6 @@ data:
 
 preprocess:
   enabled: true
-
-extraction:
-  medbert_prefer_gpu: true
-  medbert_gpu_device: 0
 
 output:
   output_dir: "output"
@@ -371,7 +366,7 @@ output:
 pytest tests/ -v
 ```
 
-All tests mock LLM and MedBERT calls — no API key or GPU required.
+All tests mock LLM and Hugging Face calls — no API key or GPU required.
 
 ---
 

@@ -10,5 +10,8 @@ transformers>=4.45
 torch>=2.2
 pytest>=8.0
 
+# Required for T5-family tokenizers (ClinicalT5, SciFive, FLAN-T5)
+sentencepiece>=0.2
+
 # Optional: only needed when loading notes with source='pyhealth'
 pyhealth>=1.1
