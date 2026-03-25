@@ -30,6 +30,7 @@ from tenacity import (
 from src.mds_schema import MDSItem, MDSItemType, MDSSchema
 from src.data_preprocessor.preprocessor import (
     build_extraction_context,
+    build_patient_knowledge_graph_chart,
     clean_discharge_text,
     format_structured_data_summary,
 )
@@ -110,7 +111,70 @@ Rules:
 {note_text}
 """
 
-_SUPPORTED_PREPROCESSING_MODES = ("heuristic", "llm_evidence")
+_SUPPORTED_PREPROCESSING_MODES = ("heuristic", "llm_evidence", "knowledge_graph")
+
+_GRAPH_SYSTEM_PROMPT = (
+    "You are a clinical data expert specialising in nursing home assessments. "
+    "Your task is to extract structured information from a patient knowledge graph "
+    "derived from a hospital discharge summary, and map it to MDS 3.0 (Minimum Data Set) form fields. "
+    "The knowledge graph format is:\n"
+    "  NODES — each node is tagged FACT[section][assertion] where assertion is one of:\n"
+    "    CONFIRMED  — the clinical concept is explicitly asserted as present.\n"
+    "    NEGATED    — the concept was explicitly ruled out or denied.\n"
+    "    UNCERTAIN  — the concept is hedged, suspected, or a differential.\n"
+    "  EDGES — P0 (the patient node) is connected to each evidence node via a semantic relation.\n"
+    "  CONFLICTS — pairs of nodes that contradict each other across sources, with a resolution hint.\n"
+    "Coding rules:\n"
+    "- Only treat CONFIRMED nodes as positive evidence for MDS coding.\n"
+    "- NEGATED nodes mean the condition/medication/treatment was ruled out — do NOT code them as present.\n"
+    "- UNCERTAIN nodes may appear in text fields but should lower the confidence score, not be coded as definite.\n"
+    "- For CONFLICTS, follow the resolution hint (prefer STRUCTURED source over unstructured negation).\n"
+    "- Always respond with valid JSON only — no extra prose, no markdown code fences.\n"
+    "- If information for a field is absent from the graph, set its value to null.\n"
+    "- For boolean fields use true/false.  "
+    "For select fields use the code string exactly as provided.  "
+    "For integer fields use a number.  "
+    "For multi-select fields use a JSON array of code strings.  "
+    "For text fields use a string.\n"
+    "- For MDS 3.0 sections I, N, and O: map to official item coding only, and "
+    "do not invent diagnosis, medication, or treatment codes when evidence is absent."
+)
+
+_GRAPH_USER_PROMPT_TEMPLATE = """\
+Extract MDS 3.0 form fields from the following patient knowledge graph.
+
+{note_text}
+
+=== MDS FIELDS TO EXTRACT ===
+{fields_spec}
+
+Instructions:
+- Use CONFIRMED nodes as the primary evidence for coding decisions.
+- NEGATED nodes represent explicitly ruled-out concepts — do not code them as present.
+- UNCERTAIN nodes indicate hedged or suspected findings — note them in text fields only and
+  reflect lower certainty in the confidence score.
+- For any CONFLICT pair, follow the resolution hint in the CONFLICTS section of the graph.
+- Set a field to null if no CONFIRMED evidence supports it in the graph.
+
+Respond with a single JSON object whose keys are the MDS item IDs listed above
+and whose values are the extracted values (or null if not determinable).
+Also include a "confidence" key containing a nested object with the same item
+IDs mapped to a float between 0.0 (uncertain) and 1.0 (certain).
+
+Example response format:
+{{
+  "A0800": "1",
+  "I0700": true,
+  "J0300": "1",
+  "I8000": "Hypothyroidism, GERD",
+  "confidence": {{
+    "A0800": 0.95,
+    "I0700": 1.0,
+    "J0300": 0.8,
+    "I8000": 0.9
+  }}
+}}
+"""
 
 
 def _build_fields_spec(items: List[MDSItem]) -> str:
@@ -184,6 +248,10 @@ class LLMExtractor:
         self.sections = [s.upper() for s in sections] if sections else []
         self.items_per_request = items_per_request
         self.preprocess_input = preprocess_input
+
+        # Tracks the preprocessing mode active during the current extraction call
+        # so that _extract_batch and _call_llm can select the appropriate prompts.
+        self._active_preprocessing_mode: str = "heuristic"
 
         self._client = self._build_client()
 
@@ -304,8 +372,10 @@ class LLMExtractor:
     ) -> str:
         """Preprocess note text before extraction to improve signal quality."""
         if not self.preprocess_input:
+            self._active_preprocessing_mode = "heuristic"
             return note_text
         normalized_mode = self._normalize_preprocessing_mode(preprocessing_mode)
+        self._active_preprocessing_mode = normalized_mode
         sections = self.sections or ["I", "N", "O"]
         if normalized_mode == "heuristic":
             return build_extraction_context(
@@ -315,6 +385,12 @@ class LLMExtractor:
             )
         if normalized_mode == "llm_evidence":
             return self._build_llm_evidence_context(
+                note_text,
+                sections=sections,
+                note_metadata=note_metadata,
+            )
+        if normalized_mode == "knowledge_graph":
+            return self._build_knowledge_graph_context(
                 note_text,
                 sections=sections,
                 note_metadata=note_metadata,
@@ -379,6 +455,37 @@ class LLMExtractor:
 
         parts.append("=== SUPPORTING NOTE EXCERPT ===\n" + cleaned[:1800])
         return "\n\n".join(parts)
+
+    def _build_knowledge_graph_context(
+        self,
+        note_text: str,
+        sections: Sequence[str],
+        note_metadata: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        """Build context from the patient knowledge graph.
+
+        Delegates directly to :func:`build_patient_knowledge_graph_chart` so
+        the extractor receives a structured graph of CONFIRMED / NEGATED /
+        UNCERTAIN evidence nodes rather than raw note prose.  Falls back to
+        heuristic context when the graph builder returns an empty string (e.g.
+        the note is blank and no structured metadata is available).
+        """
+        graph = build_patient_knowledge_graph_chart(
+            note_text=note_text,
+            sections=sections,
+            note_metadata=note_metadata,
+        )
+        if not graph:
+            logger.warning(
+                "Knowledge-graph builder returned empty output; "
+                "falling back to heuristic context."
+            )
+            return build_extraction_context(
+                note_text,
+                sections=sections,
+                note_metadata=note_metadata,
+            )
+        return graph
 
     def _call_evidence_llm(self, user_message: str) -> str:
         """Call the same LLM client for evidence condensation."""
@@ -449,7 +556,12 @@ class LLMExtractor:
     ) -> Dict[str, Any]:
         """Send a single LLM request for a batch of items and parse the result."""
         fields_spec = _build_fields_spec(items)
-        prompt = _USER_PROMPT_TEMPLATE.format(
+        template = (
+            _GRAPH_USER_PROMPT_TEMPLATE
+            if self._active_preprocessing_mode == "knowledge_graph"
+            else _USER_PROMPT_TEMPLATE
+        )
+        prompt = template.format(
             note_text=note_text,
             fields_spec=fields_spec,
         )
@@ -458,11 +570,16 @@ class LLMExtractor:
 
     def _call_llm(self, user_message: str) -> str:
         """Send a message to the LLM and return the text response."""
+        system_prompt = (
+            _GRAPH_SYSTEM_PROMPT
+            if self._active_preprocessing_mode == "knowledge_graph"
+            else _SYSTEM_PROMPT
+        )
         if self.provider == "openai":
             return _call_openai(
                 client=self._client,
                 model=self.model,
-                system_prompt=_SYSTEM_PROMPT,
+                system_prompt=system_prompt,
                 user_message=user_message,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
