@@ -27,18 +27,18 @@ The system takes hospital discharge notes (unstructured free text) alongside str
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│ INPUT DATA: Discharge notes (free text) + structured tables   │
+│ INPUT DATA: Discharge notes (free text) + structured tables  │
 └───────────────────────────────┬──────────────────────────────┘
                                 │
-              ┌─────────────────┼─────────────────┐
-              │                 │                 │
-              ▼                 ▼                 ▼
-     ┌────────────────┐  ┌────────────────┐  ┌─────────────────────┐
-     │ RAG BioBERT    │  │ Preprocessor   │  │ Seq2Seq preprocessor│
-     │ Retriever      │  │(knowledge graph)│ │ (seq2seq input)     │
-     └───────┬────────┘  └───────┬────────┘  └──────────┬──────────┘
-             │                   │                      │
-             ▼                   ▼                      ▼
+              ┌─────────────────┼───────────────────────┐
+              │                 │                       │
+              ▼                 ▼                       ▼
+     ┌────────────────┐  ┌─────────────────┐  ┌─────────────────────┐
+     │ RAG BioBERT    │  │ Preprocessor    │  │ Seq2Seq preprocessor│
+     │ Retriever      │  │(knowledge graph)│  │ (seq2seq input)     │
+     └───────┬────────┘  └───────┬─────────┘  └──────────┬──────────┘
+             │                   │                       │
+             ▼                   ▼                       ▼
           ┌──────────────────────────┐       ┌─────────────────────┐
           │      LLM Extractor       │       │ Seq2Seq Extractor   │
           │      (GPT / OpenAI)      │       │ (BioBART / T5)      │
