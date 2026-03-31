@@ -38,8 +38,6 @@ if __name__ == "__main__" and (__package__ is None or __package__ == ""):
 from src.data_preprocessor.data_loader import MIMICDischargeLoader
 from src.extractor.extractor import LLMExtractor
 from src.mapper.mapper import MDSMapper
-from src.extractor.medbert_extractor import MedBERTExtractor
-from src.mapper.medbert_mapper import MedBERTMapper
 from src.mds_schema import MDSAssessment, MDSSchema
 
 logger = logging.getLogger(__name__)
@@ -76,17 +74,6 @@ _PROCESSING_MODE_CONFIGS: Dict[str, Dict[str, Any]] = {
         "process_all_notes": True,
         "compare_preprocessing_methods": True,
         "extractor_type": "llm",
-    },
-    # --- MedBERT (biomedical NER) modes ---
-    "medbert-sample": {
-        "process_all_notes": False,
-        "compare_preprocessing_methods": False,
-        "extractor_type": "medbert",
-    },
-    "medbert-full": {
-        "process_all_notes": True,
-        "compare_preprocessing_methods": False,
-        "extractor_type": "medbert",
     },
 }
 
@@ -155,17 +142,7 @@ class ExtractionPipeline:
         When ``True``, process the entire loaded dataset instead of stopping
         after the initial sample.
     extractor_type : str
-        Which extraction backend to use: ``"llm"`` (OpenAI GPT, default) or
-        ``"medbert"`` (biomedical NER via Hugging Face).
-    medbert_model_name : str
-        Hugging Face model checkpoint for the MedBERT extractor.
-        Only used when ``extractor_type="medbert"``.
-    medbert_prefer_gpu : bool
-        Whether to run MedBERT on CUDA when available.
-        Only used when ``extractor_type="medbert"``.
-    medbert_gpu_device : int
-        Preferred CUDA device index for MedBERT when GPU is enabled.
-        Only used when ``extractor_type="medbert"``.
+        Which extraction backend to use: ``"llm"`` (OpenAI GPT, default).
     """
 
     def __init__(
@@ -196,9 +173,6 @@ class ExtractionPipeline:
         sample_size: int = 5,
         process_all_notes: bool = False,
         extractor_type: str = "llm",
-        medbert_model_name: str = "d4data/biomedical-ner-all",
-        medbert_prefer_gpu: bool = True,
-        medbert_gpu_device: int = 0,
     ) -> None:
         self.source = source
         self.mimic_root = mimic_root
@@ -226,9 +200,6 @@ class ExtractionPipeline:
         self.sample_size = max(1, int(sample_size))
         self.process_all_notes = process_all_notes
         self.extractor_type = extractor_type.lower()
-        self.medbert_model_name = medbert_model_name
-        self.medbert_prefer_gpu = medbert_prefer_gpu
-        self.medbert_gpu_device = int(medbert_gpu_device)
         self._comparison_rows: List[Dict[str, Any]] = []
 
         # Shared schema instance
@@ -271,32 +242,20 @@ class ExtractionPipeline:
         notes = self._select_notes_to_process(notes)
 
         # 2. Set up extractor and mapper
-        if self.extractor_type == "medbert":
-            logger.info("Using MedBERT extractor (model: %s).", self.medbert_model_name)
-            extractor: Any = MedBERTExtractor(
-                schema=self._schema,
-                model_name=self.medbert_model_name,
-                sections=self.sections,
-                preprocess_input=self.preprocess_input,
-                prefer_gpu=self.medbert_prefer_gpu,
-                gpu_device=self.medbert_gpu_device,
-            )
-            mapper: Any = MedBERTMapper(schema=self._schema, strict=self.strict_validation)
-        else:
-            logger.info("Using LLM extractor (model: %s).", self.model)
-            extractor = LLMExtractor(
-                schema=self._schema,
-                provider=self.provider,
-                model=self.model,
-                api_key=self.openai_api_key,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                max_retries=self.max_retries,
-                sections=self.sections,
-                items_per_request=self.items_per_request,
-                preprocess_input=self.preprocess_input,
-            )
-            mapper = MDSMapper(schema=self._schema, strict=self.strict_validation)
+        logger.info("Using LLM extractor (model: %s).", self.model)
+        extractor: Any = LLMExtractor(
+            schema=self._schema,
+            provider=self.provider,
+            model=self.model,
+            api_key=self.openai_api_key,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            max_retries=self.max_retries,
+            sections=self.sections,
+            items_per_request=self.items_per_request,
+            preprocess_input=self.preprocess_input,
+        )
+        mapper: Any = MDSMapper(schema=self._schema, strict=self.strict_validation)
 
         # 3. Extract and map
         assessments: List[MDSAssessment] = []
@@ -306,8 +265,7 @@ class ExtractionPipeline:
         for note in tqdm(notes, desc="Extracting MDS fields"):
             try:
                 if (
-                    self.extractor_type != "medbert"
-                    and self.compare_preprocessing_methods
+                    self.compare_preprocessing_methods
                     and self.preprocess_input
                 ):
                     comparison_result = extractor.extract_with_preprocessing_variants(
@@ -746,42 +704,16 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--extractor",
         default="llm",
-        choices=["llm", "medbert"],
+        choices=["llm"],
         dest="extractor_type",
-        help="Extraction backend: 'llm' (OpenAI GPT, default) or 'medbert' (biomedical NER)",
-    )
-    parser.add_argument(
-        "--medbert-model",
-        default="d4data/biomedical-ner-all",
-        help="Hugging Face model checkpoint for the MedBERT extractor (only used with --extractor medbert)",
-    )
-    parser.add_argument(
-        "--medbert-prefer-gpu",
-        dest="medbert_prefer_gpu",
-        action="store_true",
-        default=None,
-        help="Prefer CUDA GPU for MedBERT when available",
-    )
-    parser.add_argument(
-        "--medbert-force-cpu",
-        dest="medbert_prefer_gpu",
-        action="store_false",
-        default=None,
-        help="Force CPU for MedBERT even if CUDA is available",
-    )
-    parser.add_argument(
-        "--medbert-gpu-device",
-        type=int,
-        default=None,
-        help="CUDA device index for MedBERT when GPU is enabled (default: 0)",
+        help="Extraction backend: 'llm' (OpenAI GPT, default)",
     )
     parser.add_argument(
         "--mode",
         choices=sorted(_PROCESSING_MODE_CONFIGS.keys()),
         default=None,
         help=(
-            "Processing mode shortcut. LLM modes: sample, sample-compare, full, full-compare. "
-            "MedBERT modes: medbert-sample, medbert-full."
+            "Processing mode shortcut. Modes: sample, sample-compare, full, full-compare."
         ),
     )
     return parser
@@ -794,29 +726,23 @@ def _prompt_for_processing_mode() -> str:
         "2": "sample-compare",
         "3": "full",
         "4": "full-compare",
-        "5": "medbert-sample",
-        "6": "medbert-full",
     }
 
     print("Select processing mode:")
-    print("  --- LLM (OpenAI GPT) ---")
     print("  1. sample          - run the initial sample only")
     print("  2. sample-compare  - run the sample and compare preprocessing methods")
     print("  3. full            - process the entire dataset")
     print("  4. full-compare    - process the entire dataset and compare preprocessing methods")
-    print("  --- MedBERT (biomedical NER, no API key required) ---")
-    print("  5. medbert-sample  - run the initial sample with MedBERT NER")
-    print("  6. medbert-full    - process the entire dataset with MedBERT NER")
 
     while True:
-        response = input("Enter mode [1-6] (default 1): ").strip().lower()
+        response = input("Enter mode [1-4] (default 1): ").strip().lower()
         if not response:
             return "sample"
         if response in options:
             return options[response]
         if response in _PROCESSING_MODE_CONFIGS:
             return response
-        print("Invalid selection. Choose 1-6 or a mode name.")
+        print("Invalid selection. Choose 1-4 or a mode name.")
 
 
 def _resolve_processing_mode(args: argparse.Namespace) -> argparse.Namespace:
@@ -870,41 +796,6 @@ def _coerce_bool(value: Any, default: bool) -> bool:
     return default
 
 
-def _resolve_medbert_gpu_preference(args: argparse.Namespace) -> bool:
-    """Resolve MedBERT GPU preference using CLI first, then config fallback."""
-    if args.medbert_prefer_gpu is not None:
-        return bool(args.medbert_prefer_gpu)
-
-    config = _load_config_defaults(args.config)
-    extraction_raw = config.get("extraction", {})
-    if isinstance(extraction_raw, dict):
-        extraction_cfg = cast(Dict[str, Any], extraction_raw)
-        return _coerce_bool(extraction_cfg.get("medbert_prefer_gpu"), True)
-    return True
-
-
-def _resolve_medbert_gpu_device(args: argparse.Namespace) -> int:
-    """Resolve MedBERT CUDA device index using CLI first, then config fallback."""
-    if args.medbert_gpu_device is not None:
-        requested = args.medbert_gpu_device
-    else:
-        requested = 0
-        config = _load_config_defaults(args.config)
-        extraction_raw = config.get("extraction", {})
-        if isinstance(extraction_raw, dict):
-            extraction_cfg = cast(Dict[str, Any], extraction_raw)
-            configured = extraction_cfg.get("medbert_gpu_device", 0)
-            try:
-                requested = int(configured)
-            except Exception:
-                requested = 0
-
-    if requested < 0:
-        logger.warning("Invalid MedBERT GPU device index %d; defaulting to 0.", requested)
-        return 0
-    return int(requested)
-
-
 def _main() -> int:
     try:
         from dotenv import load_dotenv
@@ -920,8 +811,6 @@ def _main() -> int:
     )
     args = _build_arg_parser().parse_args()
     args = _resolve_processing_mode(args)
-    medbert_prefer_gpu = _resolve_medbert_gpu_preference(args)
-    medbert_gpu_device = _resolve_medbert_gpu_device(args)
 
     pipeline = ExtractionPipeline(
         source=args.source,
@@ -935,9 +824,6 @@ def _main() -> int:
         sample_size=args.sample_size,
         process_all_notes=args.process_all_notes,
         extractor_type=args.extractor_type,
-        medbert_model_name=args.medbert_model,
-        medbert_prefer_gpu=medbert_prefer_gpu,
-        medbert_gpu_device=medbert_gpu_device,
     )
     assessments = pipeline.run()
     logger.info("Pipeline complete. Generated %d assessments.", len(assessments))

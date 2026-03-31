@@ -1,13 +1,13 @@
 # Extractor
 
-This package provides two independent extractors that consume a **Patient Knowledge Graph** (produced by `data_preprocessor`) and return raw structured extraction results for the mapper.
+This package provides extractors that consume a **Patient Knowledge Graph** (produced by `data_preprocessor`) and return raw structured extraction results for the mapper.
 
 ## Files
 
 | File | Responsibility |
 |------|---------------|
 | `extractor.py` | LLM-based extraction via OpenAI Chat Completions |
-| `medbert_extractor.py` | Biomedical NER extraction using a Hugging Face token-classification model |
+| `seq2seq_extractor.py` | Encoder-decoder extraction using BioBART / ClinicalT5 |
 
 Both extractors share the same output format so they can feed the same mapper.
 
@@ -72,29 +72,30 @@ extractor = LLMExtractor(schema=schema, api_key="sk-...")
 
 ---
 
-## medbert_extractor.py — `MedBERTExtractor`
+## seq2seq_extractor.py — `Seq2SeqExtractor`
 
-Uses a Hugging Face token-classification checkpoint to run biomedical named entity recognition (NER) over the preprocessed note. Identified entity spans are matched to MDS item IDs using regex patterns generated from the MDS 3.0 PDF.
+Uses a fine-tuned BioBART or ClinicalT5 encoder-decoder model to generate MDS JSON directly from the note context. No OpenAI API key is required.
 
-No OpenAI API key is required.
+The simplified seq2seq preprocessor (`build_seq2seq_input`) is called internally to truncate the note to fit within the model's context window (≤ 1,024 tokens for BART, ≤ 512 tokens for T5).
 
 ### Usage
 
 ```python
-from src.extractor.medbert_extractor import MedBERTExtractor
+from src.extractor.seq2seq_extractor import Seq2SeqExtractor
 from src.mds_schema import MDSSchema
 
 schema = MDSSchema(section_ids=["I", "N", "O"])
 
-extractor = MedBERTExtractor(
+extractor = Seq2SeqExtractor(
     schema=schema,
-    model_name="d4data/biomedical-ner-all",  # any HF token-classification model
+    model_name="GanjinZero/biobart-v2-base",  # or a fine-tuned checkpoint
     sections=["I", "N", "O"],
-    prefer_gpu=True,   # default: True — uses CUDA when available
-    gpu_device=0,      # CUDA device index
+    prefer_gpu=True,
+    gpu_device=0,
 )
 
 raw = extractor.extract(note.text, note_metadata=note.metadata)
+# raw → {item_id: value, "confidence": {item_id: float}, "_raw_output": str}
 ```
 
 ### Constructor parameters
@@ -102,44 +103,37 @@ raw = extractor.extract(note.text, note_metadata=note.metadata)
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `schema` | required | `MDSSchema` instance |
-| `model_name` | `"d4data/biomedical-ner-all"` | Hugging Face model ID |
+| `model_name` | `"GanjinZero/biobart-v2-base"` | Hugging Face model ID or local checkpoint path |
 | `sections` | `["I","N","O"]` | MDS sections to extract |
 | `prefer_gpu` | `True` | Use CUDA when available |
 | `gpu_device` | `0` | CUDA device index |
-| `patterns_path` | auto | Path to `medbert_patterns.auto.json` |
+| `max_input_length` | `1024` | Token limit for the encoder input |
+| `max_output_length` | `512` | Token limit for the decoder output |
+| `num_beams` | `4` | Beam search width |
+| `fine_tuned_path` | `None` | Path to a fine-tuned checkpoint (overrides `model_name`) |
 
 ### GPU device selection
 
-The extractor resolves the device at model load time and logs the outcome:
-
 | Scenario | Log message |
 |---|---|
-| GPU found | `MedBERT using GPU (CUDA device 0: NVIDIA GeForce RTX 3080).` |
-| Requested device out of range | `Requested CUDA device N is unavailable (device_count=M). Falling back to 0.` |
-| GPU preference disabled | `MedBERT using CPU (GPU preference disabled).` |
-| CUDA not available | `MedBERT using CPU (CUDA not available).` |
-| No CUDA devices | `MedBERT using CPU (no CUDA devices detected).` |
-| `torch` import failed | `MedBERT using CPU (torch import failed: …).` |
+| GPU found | `Seq2SeqExtractor using GPU (CUDA device 0: NVIDIA GeForce RTX 3080).` |
+| Requested device out of range | `Requested CUDA device N unavailable (device_count=M). Falling back to 0.` |
+| GPU preference disabled | `Seq2SeqExtractor using CPU (GPU preference disabled).` |
+| CUDA not available | `Seq2SeqExtractor using CPU (CUDA not available).` |
+| `torch` import failed | `Seq2SeqExtractor using CPU (torch import failed: …).` |
 
-Force CPU explicitly:
+### Fine-tuning
 
-```python
-extractor = MedBERTExtractor(schema=schema, prefer_gpu=False)
+Use `scripts/train_seq2seq.py` to fine-tune on labeled (note → MDS JSON) pairs:
+
+```bash
+.conda/python.exe scripts/train_seq2seq.py \
+    --data data/labeled_pairs.csv \
+    --output-dir models/biobart-finetuned \
+    --epochs 5
 ```
 
-Target a specific GPU in a multi-GPU machine:
-
-```python
-extractor = MedBERTExtractor(schema=schema, prefer_gpu=True, gpu_device=1)
-```
-
-### Extraction internals
-
-1. The preprocessor's `build_extraction_context()` is called to focus the note text.
-2. The Hugging Face `pipeline("ner", ...)` runs token classification, grouping sub-word tokens into entity spans.
-3. Entity labels (e.g. `B-Disease`, `B-Chemical`) are mapped to MDS sections (I / N / O).
-4. Each entity is matched against section-specific regex patterns (`config/medbert_patterns.auto.json`) to determine the MDS item ID.
-5. Results include a `_evidence` trace (entity text → item ID) and an `_entities` list (full NER output).
+See `scripts/train_seq2seq.py --help` for all options.
 
 ### Checking GPU readiness before inference
 
@@ -161,7 +155,7 @@ gpu_tensor_op: PASS
 ## Running tests
 
 ```bash
-.conda/python.exe -m pytest tests/test_extractor.py tests/test_medbert_extractor.py -v
+.conda/python.exe -m pytest tests/test_extractor.py -v
 ```
 
 All tests mock LLM and Hugging Face calls — no API key or GPU is needed.

@@ -7,7 +7,7 @@ This package validates raw extraction results against the MDS 3.0 schema and pac
 | File | Responsibility |
 |------|---------------|
 | `mapper.py` | Base mapper for LLM extraction results |
-| `medbert_mapper.py` | Extended mapper for MedBERT extraction results — adds evidence trace metadata |
+| `seq2seq_mapper.py` | Extended mapper for Seq2Seq extraction results — stores raw model output in metadata |
 
 ---
 
@@ -80,24 +80,24 @@ Fields included per item:
 
 ---
 
-## medbert_mapper.py — `MedBERTMapper`
+## seq2seq_mapper.py — `Seq2SeqMapper`
 
-Extends `MDSMapper` with additional handling for MedBERT-specific output keys. In addition to standard validation, it:
+Extends `MDSMapper` with additional handling for Seq2Seq-specific output keys. In addition to standard validation, it:
 
-- Persists `_evidence` (entity text → item ID mapping) into `assessment.metadata["medbert_evidence"]`
-- Persists `_entities` (raw NER entity list) into `assessment.metadata["medbert_entities"]`
+- Strips `_raw_output` and `_model_name` from the extraction dict before base validation
+- Persists them into `assessment.metadata` under `seq2seq_raw_output` and `seq2seq_model`
 
 ### Usage
 
 ```python
-from src.extractor.medbert_extractor import MedBERTExtractor
-from src.mapper.medbert_mapper import MedBERTMapper
+from src.extractor.seq2seq_extractor import Seq2SeqExtractor
+from src.mapper.seq2seq_mapper import Seq2SeqMapper
 from src.mds_schema import MDSSchema
 
 schema = MDSSchema(section_ids=["I", "N", "O"])
 
-extractor = MedBERTExtractor(schema=schema)
-mapper = MedBERTMapper(schema=schema)
+extractor = Seq2SeqExtractor(schema=schema)
+mapper = Seq2SeqMapper(schema=schema)
 
 raw = extractor.extract(note.text, note_metadata=note.metadata)
 assessment = mapper.map(
@@ -107,20 +107,21 @@ assessment = mapper.map(
     extraction=raw,
 )
 
-# Access MedBERT-specific metadata
-print(assessment.metadata["medbert_evidence"])
-# → {"I0200A": ["heart failure", "CHF"], "N0410A": ["warfarin 5mg"], ...}
+# Access Seq2Seq-specific metadata
+print(assessment.metadata["seq2seq_model"])
+# → "GanjinZero/biobart-v2-base"
 
-print(assessment.metadata["medbert_entities"])
-# → [{"word": "heart failure", "entity_group": "Disease", "score": 0.98, ...}, ...]
+print(assessment.metadata["seq2seq_raw_output"])
+# → '{"I0200A": 1, "N0410A": 1, ...}'
 ```
 
 ### Extra metadata keys
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `medbert_evidence` | `dict[str, list[str]]` | Entity text spans that triggered each item ID |
-| `medbert_entities` | `list[dict]` | Full NER entity output from Hugging Face pipeline |
+| `extractor` | `str` | Always `"seq2seq"` |
+| `seq2seq_model` | `str` | Hugging Face model name used for extraction |
+| `seq2seq_raw_output` | `str` | First 1,000 chars of the raw decoder output string |
 
 ---
 
@@ -151,7 +152,7 @@ print(assessment.to_dict())
 ## Running tests
 
 ```bash
-.conda/python.exe -m pytest tests/test_mapper.py tests/test_medbert_mapper.py -v
+.conda/python.exe -m pytest tests/test_mapper.py -v
 ```
 
 All tests use mocked extraction output — no API key or GPU needed.
